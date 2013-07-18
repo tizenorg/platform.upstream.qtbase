@@ -141,3 +141,5 @@ contains(QT_CONFIG, xkbcommon-qt): {
         INCLUDEPATH += ../../../3rdparty/xkbcommon/xkbcommon/
     }
 }
+
+tizen:LIBS += -laul
