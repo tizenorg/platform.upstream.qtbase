@@ -1799,7 +1799,7 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
     QWindow *window = e->window.data();
     modifier_buttons = e->modifiers;
     if (e->nullWindow
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#if (defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)) || defined(Q_OS_LINUX_TIZEN)
            || e->key == Qt::Key_Back || e->key == Qt::Key_Menu
 #endif
             ) {
@@ -1815,7 +1815,7 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
 
     if (window && !window->d_func()->blockedByModalWindow)
         QGuiApplication::sendSpontaneousEvent(window, &ev);
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#if (defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)) || defined(Q_OS_LINUX_TIZEN)
     else
         ev.setAccepted(false);
 
@@ -1825,6 +1825,10 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
     } else if (e->keyType == QEvent::KeyRelease && e->key == Qt::Key_Back && !backKeyPressAccepted && !ev.isAccepted()) {
         if (!window)
             qApp->quit();
+#ifdef Q_OS_LINUX_TIZEN
+        else if (QGuiApplication::inputMethod() && QGuiApplication::inputMethod()->isVisible())
+            QGuiApplication::inputMethod()->hide();
+#endif
         else
             QWindowSystemInterface::handleCloseEvent(window);
     }
