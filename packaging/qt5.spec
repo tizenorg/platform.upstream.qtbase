@@ -1,3 +1,28 @@
+# The MIT License (MIT)
+# 
+# Copyright (c) 2013 Tomasz Olszak <olszak.tomasz@gmail.com>
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+# This file is based on qtbase.spec from Mer project
+# http://merproject.org
+
 # libQtPlatformSupport is not built as a shared library, only as a
 # static .a lib-archive. By default the OBS build removes all discovered
 # libFOO.a files and as such rpmlint never complains about
@@ -5,19 +30,19 @@
 # This flag tells rpmbuild to behave.
 %define keepstatic 1
 
+
 # Version is the date of latest commit in qtbase, followed by 'g' + few
 # characters of the last git commit ID.
 # NOTE: tarball's prefix is 'qt5-base' until version number starts to
 # make sense. This allows to update spec contents easily as snapshots
 # evolve.
-
 Name:       qt5
 Summary:    Cross-platform application and UI framework
-Version:    5.0.2
-Release:    1%{?dist}
-Group:      Qt/Qt
-License:    LGPLv2.1 with exception or GPLv3
-URL:        http://qt.nokia.com
+Version:    5.2.0
+Release:    0
+Group:      Base/Libraries
+License:    LGPL-2.1 or GPL-3.0
+URL:        http://qt.digia.com
 Source0:    %{name}-%{version}.tar.bz2
 Source1:    macros.qt5-default
 Source100:  qtbase-rpmlintrc
@@ -27,7 +52,6 @@ BuildRequires:  pkgconfig(egl)
 BuildRequires:  pkgconfig(freetype2)
 BuildRequires:  pkgconfig(glesv2)
 BuildRequires:  pkgconfig(glib-2.0)
-BuildRequires:  pkgconfig(gstreamer-plugins-base-0.10)
 BuildRequires:  pkgconfig(icu-uc)
 BuildRequires:  pkgconfig(ice)
 BuildRequires:  pkgconfig(libpng)
@@ -35,37 +59,18 @@ BuildRequires:  pkgconfig(libxslt)
 BuildRequires:  pkgconfig(openssl)
 BuildRequires:  pkgconfig(sm)
 BuildRequires:  pkgconfig(sqlite3)
-BuildRequires:  pkgconfig(x11)
-BuildRequires:  pkgconfig(xcursor)
-BuildRequires:  pkgconfig(xcb-keysyms)
-BuildRequires:  pkgconfig(xcb-image)
-BuildRequires:  pkgconfig(xcb-icccm)
-BuildRequires:  pkgconfig(xcb-renderutil)
-BuildRequires:  pkgconfig(xcomposite)
-BuildRequires:  pkgconfig(xext)
-BuildRequires:  pkgconfig(xft)
-BuildRequires:  pkgconfig(xi)
-BuildRequires:  pkgconfig(xinerama)
-BuildRequires:  pkgconfig(xmu)
-BuildRequires:  pkgconfig(xrandr)
-BuildRequires:  pkgconfig(xt)
-BuildRequires:  pkgconfig(xtst)
-BuildRequires:  pkgconfig(xv)
 BuildRequires:  pkgconfig(zlib)
 BuildRequires:  pkgconfig(udev)
 BuildRequires:  pkgconfig(mtdev)
 BuildRequires:  cups-devel
 BuildRequires:  fdupes
 BuildRequires:  flex
-# Package not available but installed in OBS?
-#BuildRequires:  gcc-g++
 BuildRequires:  libjpeg-devel
-#BuildRequires:  libtiff-devel
 BuildRequires:  pam-devel
 BuildRequires:  readline-devel
-BuildRequires:  sharutils
-#BuildRequires:  gdb
 BuildRequires:  python
+BuildRequires:  pkgconfig(fontconfig)
+
 
 %description
 Qt is a cross-platform application and UI framework. Using Qt, you can
@@ -75,7 +80,7 @@ mobile and embedded systems without rewriting the source code.
 
 %package tools
 Summary:    Development tools for qtbase
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   qtchooser
 
 %description tools
@@ -83,7 +88,7 @@ This package contains useful tools for Qt development
 
 %package qtcore
 Summary:    The QtCore library
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires(post):     /sbin/ldconfig
 Requires(postun):   /sbin/ldconfig
 
@@ -92,7 +97,7 @@ This package contains the QtCore library
 
 %package qtcore-devel
 Summary:    Development files for QtCore
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qmake
 Requires:   %{name}-tools
 Requires:   %{name}-qtcore = %{version}-%{release}
@@ -106,7 +111,7 @@ that use the QtCore
 
 %package qmake
 Summary:    QMake
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   qtchooser
 
 %description qmake
@@ -115,7 +120,7 @@ This package contains qmake
 
 %package plugin-bearer-connman
 Summary:    Connman bearer plugin
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-bearer-connman
@@ -124,7 +129,7 @@ This package contains the connman bearer plugin
 
 %package plugin-bearer-generic
 Summary:    Connman generic plugin
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-bearer-generic
@@ -133,7 +138,7 @@ This package contains the connman generic bearer plugin
 
 %package plugin-bearer-nm
 Summary:    Connman generic plugin
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-bearer-nm
@@ -142,7 +147,7 @@ This package contains the connman NetworkManager bearer plugin
 
 %package plugin-imageformat-gif
 Summary:    Gif image format plugin
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-imageformat-gif
@@ -151,7 +156,7 @@ This package contains the gif imageformat plugin
 
 %package plugin-imageformat-ico
 Summary:    Ico image format plugin
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-imageformat-ico
@@ -160,24 +165,15 @@ This package contains the ico imageformat plugin
 
 %package plugin-imageformat-jpeg
 Summary:    JPEG image format plugin
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-imageformat-jpeg
 This package contains the JPEG imageformat plugin
 
-
-#%package plugin-imageformat-tiff
-#Summary:    TIFF image format plugin
-#Group:      Qt/Qt
-#
-#%description plugin-imageformat-tiff
-#This package contains the TIFF imageformat plugin
-
-
 %package plugin-platform-minimal
 Summary:    Minimal platform plugin
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-platform-minimal
@@ -185,42 +181,15 @@ This package contains the minimal platform plugin
 
 %package plugin-platform-offscreen
 Summary:    Offscreen platform plugin
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-platform-offscreen
 This package contains the offscreen platform plugin
 
-
-%package plugin-platform-inputcontext-compose
-Summary:    compose input context platform plugin
-Group:      Qt/Qt
-Requires:   %{name}-qtcore = %{version}-%{release}
-
-%description plugin-platform-inputcontext-compose
-This package contains compose platform inputcontext plugin
-
-
-%package plugin-platform-inputcontext-maliit
-Summary:    MALIIT input context platform plugin
-Group:      Qt/Qt
-Requires:   %{name}-qtcore = %{version}-%{release}
-
-%description plugin-platform-inputcontext-maliit
-This package contains MALIIT platform inputcontext plugin
-
-
-#%package plugin-platform-wayland
-#Summary:    Wayland platform plugin
-#Group:      Qt/Qt
-#
-#%description plugin-platform-wayland
-#This package contains the wayland platform plugin
-
-
 %package plugin-platform-eglfs
 Summary:    Eglfs platform plugin
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-platform-eglfs
@@ -228,23 +197,15 @@ This package contains the eglfs platform plugin
 
 %package plugin-platform-minimalegl
 Summary:    Minimalegl platform plugin
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-platform-minimalegl
 This package contains the minimalegl platform plugin
 
-%package plugin-platform-xcb
-Summary:    XCB platform plugin
-Group:      Qt/Qt
-Requires:   %{name}-qtcore = %{version}-%{release}
-
-%description plugin-platform-xcb
-This package contains the XCB platform plugin
-
 %package plugin-platform-linuxfb
 Summary:    Linux framebuffer platform plugin
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-platform-linuxfb
@@ -252,7 +213,7 @@ This package contains the linuxfb platform plugin for Qt
 
 %package plugin-printsupport-cups
 Summary:    CUPS print support plugin
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-printsupport-cups
@@ -260,24 +221,15 @@ This package contains the CUPS print support plugin
 
 %package plugin-accessible-widgets
 Summary:     Accessible widgets plugin
-Group:       Qt/Qt
+Group:       Base/Libraries
 Requires:    %{name}-qtcore = %{version}-%{release}
 
 %description plugin-accessible-widgets
 This package contains the access widgets plugin
 
-# %package plugin-platform-xlib
-# Summary:    Xlib platform plugin
-# Group:      Qt/Qt
-# 
-# %description plugin-platform-xlib
-# This package contains the Xlib platform plugin
-
-
-
 %package plugin-sqldriver-sqlite
 Summary:    Sqlite sql driver plugin
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-sqldriver-sqlite
@@ -285,27 +237,24 @@ This package contains the sqlite sql driver plugin
 
 
 %package plugin-platforminputcontext-ibus
-Summary:    ibus platform import context plugin
-Group:      Qt/Qt
+Summary:    The ibus platform import context plugin
+Group:      Base/Libraries
 Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-platforminputcontext-ibus
 This package contains the ibus platform input context plugin
 
 %package plugin-generic-evdev
-Summary:    evdev generic plugin
-Group:      Qt/Qt
+Summary:    The evdev generic plugin
+Group:      Base/Libraries
 Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-generic-evdev
 This package contains evdev plugins
 
-
-
-
 %package qtdbus
 Summary:    The QtDBus library
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires(post):     /sbin/ldconfig
 Requires(postun):   /sbin/ldconfig
 
@@ -315,7 +264,7 @@ This package contains the QtDBus library
 
 %package qtdbus-devel
 Summary:    Development files for QtDBus
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtdbus = %{version}-%{release}
 Requires:   pkgconfig(dbus-1)
 
@@ -326,7 +275,7 @@ applications that use QtDBus
 
 %package qtgui
 Summary:    The QtGui Library
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires(post):     /sbin/ldconfig
 Requires(postun):   /sbin/ldconfig
 
@@ -336,7 +285,7 @@ This package contains the QtGui library
 
 %package qtgui-devel
 Summary:    Development files for QtGui
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtgui = %{version}-%{release}
 Requires:   %{name}-qtopengl-devel
 
@@ -347,7 +296,7 @@ applications that use QtGui
 
 %package qtnetwork
 Summary:    The QtNetwork library
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires(post):     /sbin/ldconfig
 Requires(postun):   /sbin/ldconfig
 
@@ -357,18 +306,16 @@ This package contains the QtNetwork library
 
 %package qtnetwork-devel
 Summary:    Development files for QtNetwork
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtnetwork = %{version}-%{release}
 
 %description qtnetwork-devel
 This package contains the files necessary to develop
 applications that use QtNetwork
 
-
-
 %package qtopengl
 Summary:    The QtOpenGL library
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires(post):     /sbin/ldconfig
 Requires(postun):   /sbin/ldconfig
 
@@ -378,10 +325,11 @@ This package contains the QtOpenGL library
 
 %package qtopengl-devel
 Summary:    Development files for QtOpenGL
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtopengl = %{version}-%{release}
-Requires:   libGLESv2-devel
-Requires:   libEGL-devel
+Requires:   pkgconfig(glesv2)
+Requires:   pkgconfig(egl)
+
 
 %description qtopengl-devel
 This package contains the files necessary to develop
@@ -390,17 +338,16 @@ applications that use QtOpenGL
 
 %package qtsql
 Summary:    The QtSql library
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires(post):     /sbin/ldconfig
 Requires(postun):   /sbin/ldconfig
 
 %description qtsql
 This package contains the QtSql library
 
-
 %package qtsql-devel
 Summary:    Development files for QtSql
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtsql = %{version}-%{release}
 
 %description qtsql-devel
@@ -410,7 +357,7 @@ applications that use QtSql
 
 %package qttest
 Summary:    The QtTest library
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires(post):     /sbin/ldconfig
 Requires(postun):   /sbin/ldconfig
 
@@ -420,7 +367,7 @@ This package contains the QtTest library
 
 %package qttest-devel
 Summary:    Development files for QtTest
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qttest = %{version}-%{release}
 
 %description qttest-devel
@@ -430,7 +377,7 @@ applications that use QtTest
 
 %package qtxml
 Summary:    The QtXml library
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires(post):     /sbin/ldconfig
 Requires(postun):   /sbin/ldconfig
 
@@ -439,7 +386,7 @@ This package contains the QtXml library
 
 %package qtxml-devel
 Summary:    Development files for QtXml
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtxml = %{version}-%{release}
 
 %description qtxml-devel
@@ -449,7 +396,7 @@ applications that use QtXml
 
 %package qtwidgets
 Summary:    The QtWidgets library
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires(post):     /sbin/ldconfig
 Requires(postun):   /sbin/ldconfig
 
@@ -458,7 +405,7 @@ This package contains the QtWidgets library
 
 %package qtwidgets-devel
 Summary:    Development files for QtWidgets
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtwidgets = %{version}-%{release}
 
 %description qtwidgets-devel
@@ -467,7 +414,7 @@ applications that use QtWidgets
 
 %package qtplatformsupport-devel
 Summary:    Development files for QtPlatformSupport
-Group:      Qt/Qt
+Group:      Base/Libraries
 
 %description qtplatformsupport-devel
 This package contains the files necessary to develop
@@ -475,7 +422,7 @@ applications that use QtPlatformSupport
 
 %package qtbootstrap-devel
 Summary:    Development files for QtBootstrap
-Group:      Qt/Qt
+Group:      Base/Libraries
 
 %description qtbootstrap-devel
 This package contains the files necessary to develop
@@ -483,7 +430,7 @@ applications that use QtBootstrap
 
 %package qtprintsupport
 Summary:    The QtPrintSupport
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires(post):     /sbin/ldconfig
 Requires(postun):   /sbin/ldconfig
 
@@ -492,7 +439,7 @@ This package contains the QtPrintSupport library
 
 %package qtprintsupport-devel
 Summary:    Development files for QtPrintSupport
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtprintsupport = %{version}-%{release}
 
 %description qtprintsupport-devel
@@ -501,7 +448,7 @@ applications that use QtPrintSupport
 
 %package qtconcurrent
 Summary:    QtConcurrent library
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires(post):     /sbin/ldconfig
 Requires(postun):   /sbin/ldconfig
 
@@ -510,7 +457,7 @@ This package contains the QtConcurrent library
 
 %package qtconcurrent-devel
 Summary:    Development files for QtConcurrent
-Group:      Qt/Qt
+Group:      Base/Libraries
 Requires:   %{name}-qtconcurrent = %{version}-%{release}
 
 %description qtconcurrent-devel
@@ -546,8 +493,9 @@ MAKEFLAGS=%{?_smp_mflags} \
     -confirm-license \
 %if ! 0%{?qt5_release_build}
     -developer-build \
+    -no-warnings-are-errors \
 %endif
-    -platform linux-g++ \
+    -platform devices/linux-g++-tizen-ivi \
     -prefix "%{_prefix}" \
     -bindir "%{_libdir}/qt5/bin" \
     -libdir "%{_libdir}" \
@@ -585,30 +533,17 @@ MAKEFLAGS=%{?_smp_mflags} \
     -no-gtkstyle \
     -opengl es2 \
     -no-openvg \
-    -lfontconfig \
-    -I/usr/include/freetype2 \
     -nomake tests \
     -nomake examples \
-    -nomake demos \
     -no-xinput2 \
-    -xcb
+    -no-xcb \
 #
 make %{?_smp_mflags}
 
 
 %install
 rm -rf %{buildroot}
-%make_install
-#
-# We don't need qt5/Qt/
-rm -rf %{buildroot}/%{_includedir}/qt5/Qt
-
-# Fix wrong path in pkgconfig files
-find %{buildroot}%{_libdir}/pkgconfig -type f -name '*.pc' \
--exec perl -pi -e "s, -L%{_builddir}/?\S+,,g" {} \;
-# Fix wrong path in prl files
-find %{buildroot}%{_libdir} -type f -name '*.prl' \
--exec sed -i -e "/^QMAKE_PRL_BUILD_DIR/d;s/\(QMAKE_PRL_LIBS =\).*/\1/" {} \;
+INSTALL_ROOT=%{buildroot} %{__make} install
 
 find %{buildroot}%{_docdir}/qt5/ -type f -exec chmod ugo-x {} \;
 
@@ -622,16 +557,16 @@ mkdir -p %{buildroot}%{_libdir}/qt5/examples/
 #
 # Install qmake rpm macros
 install -D -p -m 0644 %{_sourcedir}/macros.qt5-default \
-%{buildroot}/%{_sysconfdir}/rpm/macros.qt5-default
+%{buildroot}%{_sysconfdir}/rpm/macros.qt5-default
 
 # Add a configuration link for qtchooser - the 5.conf is installed by qtchooser
 mkdir -p %{buildroot}/etc/xdg/qtchooser
 ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchooser/default.conf
 
 #
-%fdupes %{buildroot}/%{_libdir}
-%fdupes %{buildroot}/%{_includedir}
-%fdupes %{buildroot}/%{_datadir}
+%fdupes %{buildroot}%{_libdir}
+%fdupes %{buildroot}%{_includedir}
+%fdupes %{buildroot}%{_datadir}
 
 
 #### Pre/Post section
@@ -672,9 +607,6 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 #### File section
 
 # There is no naked qt5 package
-#%files
-
-
 
 %files tools
 %defattr(-,root,root,-)
@@ -697,46 +629,54 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtcore-devel
 %defattr(-,root,root,-)
-%{_includedir}/qt5/QtCore/
+%{_includedir}/qt5/QtCore
 %{_libdir}/libQt5Core.prl
+%{_libdir}/libQt5Core.la
 %{_libdir}/libQt5Core.so
 %{_libdir}/pkgconfig/Qt5Core.pc
 %{_datadir}/qt5/mkspecs/modules/qt_lib_core.pri
-%{_libdir}/cmake/
+%{_datadir}/qt5/mkspecs/modules/qt_lib_core_private.pri
+%{_libdir}/cmake
 
 %files qmake
 %defattr(-,root,root,-)
 %{_libdir}/qt5/bin/qmake
-%{_datadir}/qt5/mkspecs/aix-*/
-%{_datadir}/qt5/mkspecs/blackberry*/
-%{_datadir}/qt5/mkspecs/common/
-%{_datadir}/qt5/mkspecs/cygwin-*/
-%{_datadir}/qt5/mkspecs/darwin-*/
-%{_datadir}/qt5/mkspecs/features/
-%{_datadir}/qt5/mkspecs/freebsd-*/
+%{_datadir}/qt5/mkspecs/aix-*
+%{_datadir}/qt5/mkspecs/blackberry*
+%{_datadir}/qt5/mkspecs/common
+%{_datadir}/qt5/mkspecs/cygwin-*
+%{_datadir}/qt5/mkspecs/darwin-*
+%{_datadir}/qt5/mkspecs/features
+%{_datadir}/qt5/mkspecs/freebsd-*
 %{_datadir}/qt5/mkspecs/hpux-*
 %{_datadir}/qt5/mkspecs/hpuxi-*
-%{_datadir}/qt5/mkspecs/hurd-g++/
-%{_datadir}/qt5/mkspecs/irix-*/
-%{_datadir}/qt5/mkspecs/linux-*/
-%{_datadir}/qt5/mkspecs/lynxos-*/
-%{_datadir}/qt5/mkspecs/macx-*/
-%{_datadir}/qt5/mkspecs/netbsd-*/
-%{_datadir}/qt5/mkspecs/openbsd-*/
+%{_datadir}/qt5/mkspecs/hurd-g++
+%{_datadir}/qt5/mkspecs/irix-*
+%{_datadir}/qt5/mkspecs/linux-*
+%{_datadir}/qt5/mkspecs/lynxos-*
+%{_datadir}/qt5/mkspecs/macx-*
+%{_datadir}/qt5/mkspecs/netbsd-*
+%{_datadir}/qt5/mkspecs/openbsd-*
 %{_datadir}/qt5/mkspecs/qconfig.pri
+%{_datadir}/qt5/mkspecs/qfeatures.pri
 %{_datadir}/qt5/mkspecs/qmodule.pri
-%{_datadir}/qt5/mkspecs/qnx*/
-%{_datadir}/qt5/mkspecs/sco-*/
-%{_datadir}/qt5/mkspecs/solaris-*/
-%{_datadir}/qt5/mkspecs/tru64-*/
-%{_datadir}/qt5/mkspecs/unixware-*/
-%{_datadir}/qt5/mkspecs/unsupported/
-%{_datadir}/qt5/mkspecs/win32-g++/
-%{_datadir}/qt5/mkspecs/win32-icc/
-%{_datadir}/qt5/mkspecs/win32-msvc20*/
-%{_datadir}/qt5/mkspecs/wince*/
-%{_datadir}/qt5/mkspecs/devices/
+%{_datadir}/qt5/mkspecs/qnx*
+%{_datadir}/qt5/mkspecs/sco-*
+%{_datadir}/qt5/mkspecs/solaris-*
+%{_datadir}/qt5/mkspecs/tru64-*
+%{_datadir}/qt5/mkspecs/unixware-*
+%{_datadir}/qt5/mkspecs/unsupported
+%{_datadir}/qt5/mkspecs/win32-g++
+%{_datadir}/qt5/mkspecs/win32-icc
+%{_datadir}/qt5/mkspecs/win32-msvc20*
+%{_datadir}/qt5/mkspecs/wince*
+%{_datadir}/qt5/mkspecs/devices
 %{_datadir}/qt5/mkspecs/qdevice.pri
+%{_datadir}/qt5/mkspecs/winphone-arm-msvc2012
+%{_datadir}/qt5/mkspecs/winphone-x86-msvc2012
+%{_datadir}/qt5/mkspecs/winrt-arm-msvc2012
+%{_datadir}/qt5/mkspecs/winrt-x64-msvc2012
+%{_datadir}/qt5/mkspecs/winrt-x86-msvc2012
 %config(noreplace) %{_sysconfdir}/rpm/macros.qt5-default
 
 %files qtdbus
@@ -748,11 +688,13 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %defattr(-,root,root,-)
 %{_libdir}/qt5/bin/qdbuscpp2xml
 %{_libdir}/qt5/bin/qdbusxml2cpp
-%{_includedir}/qt5/QtDBus/
+%{_includedir}/qt5/QtDBus
 %{_libdir}/libQt5DBus.so
 %{_libdir}/libQt5DBus.prl
+%{_libdir}/libQt5DBus.la
 %{_libdir}/pkgconfig/Qt5DBus.pc
 %{_datadir}/qt5/mkspecs/modules/qt_lib_dbus.pri
+%{_datadir}/qt5/mkspecs/modules/qt_lib_dbus_private.pri
 
 
 %files qtgui
@@ -762,11 +704,13 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtgui-devel
 %defattr(-,root,root,-)
-%{_includedir}/qt5/QtGui/
+%{_includedir}/qt5/QtGui
 %{_libdir}/libQt5Gui.prl
+%{_libdir}/libQt5Gui.la
 %{_libdir}/libQt5Gui.so
 %{_libdir}/pkgconfig/Qt5Gui.pc
 %{_datadir}/qt5/mkspecs/modules/qt_lib_gui.pri
+%{_datadir}/qt5/mkspecs/modules/qt_lib_gui_private.pri
 
 
 %files qtnetwork
@@ -776,11 +720,13 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtnetwork-devel
 %defattr(-,root,root,-)
-%{_includedir}/qt5/QtNetwork/
+%{_includedir}/qt5/QtNetwork
 %{_libdir}/libQt5Network.prl
+%{_libdir}/libQt5Network.la
 %{_libdir}/libQt5Network.so
 %{_libdir}/pkgconfig/Qt5Network.pc
 %{_datadir}/qt5/mkspecs/modules/qt_lib_network.pri
+%{_datadir}/qt5/mkspecs/modules/qt_lib_network_private.pri
 
 
 %files qtopengl
@@ -790,18 +736,22 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtopengl-devel
 %defattr(-,root,root,-)
-%{_includedir}/qt5/QtOpenGL/
-%{_includedir}/qt5/QtOpenGLExtensions/
+%{_includedir}/qt5/QtOpenGL
+%{_includedir}/qt5/QtOpenGLExtensions
 %{_libdir}/libQt5OpenGL.prl
+%{_libdir}/libQt5OpenGL.la
 %{_libdir}/libQt5OpenGLExtensions.prl
+%{_libdir}/libQt5OpenGLExtensions.la
 %{_libdir}/libQt5OpenGL.so
 %{_libdir}/libQt5OpenGLExtensions.a
 %{_libdir}/pkgconfig/Qt5OpenGL.pc
 %{_libdir}/pkgconfig/Qt5OpenGLExtensions.pc
 %{_datadir}/qt5/mkspecs/modules/qt_lib_opengl.pri
+%{_datadir}/qt5/mkspecs/modules/qt_lib_opengl_private.pri
 %{_datadir}/qt5/mkspecs/android-g++/qmake.conf
 %{_datadir}/qt5/mkspecs/android-g++/qplatformdefs.h
 %{_datadir}/qt5/mkspecs/modules/qt_lib_openglextensions.pri
+%{_datadir}/qt5/mkspecs/modules/qt_lib_openglextensions_private.pri
 
 
 %files qtsql
@@ -811,11 +761,13 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtsql-devel
 %defattr(-,root,root,-)
-%{_includedir}/qt5/QtSql/
+%{_includedir}/qt5/QtSql
 %{_libdir}/libQt5Sql.prl
+%{_libdir}/libQt5Sql.la
 %{_libdir}/libQt5Sql.so
 %{_libdir}/pkgconfig/Qt5Sql.pc
 %{_datadir}/qt5/mkspecs/modules/qt_lib_sql.pri
+%{_datadir}/qt5/mkspecs/modules/qt_lib_sql_private.pri
 
 
 %files qttest
@@ -824,11 +776,13 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qttest-devel
 %defattr(-,root,root,-)
-%{_includedir}/qt5/QtTest/
+%{_includedir}/qt5/QtTest
 %{_libdir}/libQt5Test.prl
+%{_libdir}/libQt5Test.la
 %{_libdir}/libQt5Test.so
 %{_libdir}/pkgconfig/Qt5Test.pc
 %{_datadir}/qt5/mkspecs/modules/qt_lib_testlib.pri
+%{_datadir}/qt5/mkspecs/modules/qt_lib_testlib_private.pri
 
 %files qtxml
 %defattr(-,root,root,-)
@@ -836,11 +790,13 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtxml-devel
 %defattr(-,root,root,-)
-%{_includedir}/qt5/QtXml/
+%{_includedir}/qt5/QtXml
 %{_libdir}/libQt5Xml.prl
+%{_libdir}/libQt5Xml.la
 %{_libdir}/libQt5Xml.so
 %{_libdir}/pkgconfig/Qt5Xml.pc
 %{_datadir}/qt5/mkspecs/modules/qt_lib_xml.pri
+%{_datadir}/qt5/mkspecs/modules/qt_lib_xml_private.pri
 
 %files qtwidgets
 %defattr(-,root,root,-)
@@ -848,26 +804,30 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtwidgets-devel
 %defattr(-,root,root,-)
-%{_includedir}/qt5/QtWidgets/
+%{_includedir}/qt5/QtWidgets
 %{_libdir}/libQt5Widgets.prl
+%{_libdir}/libQt5Widgets.la
 %{_libdir}/libQt5Widgets.so
 %{_libdir}/pkgconfig/Qt5Widgets.pc
 %{_datadir}/qt5/mkspecs/modules/qt_lib_widgets.pri
+%{_datadir}/qt5/mkspecs/modules/qt_lib_widgets_private.pri
 
 %files qtplatformsupport-devel
 %defattr(-,root,root,-)
-%{_includedir}/qt5/QtPlatformSupport/
+%{_includedir}/qt5/QtPlatformSupport
 %{_libdir}/libQt5PlatformSupport.prl
+%{_libdir}/libQt5PlatformSupport.la
 %{_libdir}/libQt5PlatformSupport.a
 %{_libdir}/pkgconfig/Qt5PlatformSupport.pc
-%{_datadir}/qt5/mkspecs/modules/qt_lib_platformsupport.pri
+%{_datadir}/qt5/mkspecs/modules/qt_lib_platformsupport_private.pri
 
 %files qtbootstrap-devel
 %defattr(-,root,root,-)
 %{_libdir}/libQt5Bootstrap.prl
+%{_libdir}/libQt5Bootstrap.la
 %{_libdir}/libQt5Bootstrap.a
 %{_libdir}/pkgconfig/Qt5Bootstrap.pc
-%{_datadir}/qt5/mkspecs/modules/qt_lib_bootstrap.pri
+%{_datadir}/qt5/mkspecs/modules/qt_lib_bootstrap_private.pri
 
 %files qtprintsupport
 %defattr(-,root,root,-)
@@ -875,11 +835,13 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtprintsupport-devel
 %defattr(-,root,root,-)
-%{_includedir}/qt5/QtPrintSupport/
+%{_includedir}/qt5/QtPrintSupport
 %{_libdir}/libQt5PrintSupport.prl
+%{_libdir}/libQt5PrintSupport.la
 %{_libdir}/libQt5PrintSupport.so
 %{_libdir}/pkgconfig/Qt5PrintSupport.pc
 %{_datadir}/qt5/mkspecs/modules/qt_lib_printsupport.pri
+%{_datadir}/qt5/mkspecs/modules/qt_lib_printsupport_private.pri
 
 %files qtconcurrent
 %defattr(-,root,root,-)
@@ -887,11 +849,13 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtconcurrent-devel
 %defattr(-,root,root,-)
-%{_includedir}/qt5/QtConcurrent/
+%{_includedir}/qt5/QtConcurrent
 %{_libdir}/libQt5Concurrent.prl
+%{_libdir}/libQt5Concurrent.la
 %{_libdir}/libQt5Concurrent.so
 %{_libdir}/pkgconfig/Qt5Concurrent.pc
 %{_datadir}/qt5/mkspecs/modules/qt_lib_concurrent.pri
+%{_datadir}/qt5/mkspecs/modules/qt_lib_concurrent_private.pri
 
 
 
@@ -922,10 +886,6 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/imageformats/libqjpeg.so
 
-#%files plugin-imageformat-tiff
-#%defattr(-,root,root,-)
-#%{_libdir}/qt5/plugins/imageformats/libqtiff.so
-
 %files plugin-platform-minimal
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/platforms/libqminimal.so
@@ -934,14 +894,6 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/platforms/libqoffscreen.so
 
-%files plugin-platform-inputcontext-compose
-%defattr(-,root,root,-)
-%{_libdir}/qt5/plugins/platforminputcontexts/libcomposeplatforminputcontextplugin.so
-
-%files plugin-platform-inputcontext-maliit
-%defattr(-,root,root,-)
-%{_libdir}/qt5/plugins/platforminputcontexts/libmaliitplatforminputcontextplugin.so
-
 %files plugin-platform-eglfs
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/platforms/libqeglfs.so
@@ -949,10 +901,6 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %files plugin-platform-minimalegl
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/platforms/libqminimalegl.so
-
-%files plugin-platform-xcb
-%defattr(-,root,root,-)
-%{_libdir}/qt5/plugins/platforms/libqxcb.so
 
 %files plugin-platform-linuxfb
 %defattr(-,root,root,-)
@@ -965,10 +913,6 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %files plugin-accessible-widgets
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/accessible/libqtaccessiblewidgets.so
-
-# %files plugin-platform-xlib
-# %defattr(-,root,root,-)
-# %{_libdir}/qt5/plugins/platforms/libqxlib.so
 
 %files plugin-sqldriver-sqlite
 %defattr(-,root,root,-)
