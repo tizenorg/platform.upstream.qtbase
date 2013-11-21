@@ -1806,6 +1806,13 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
         window = QGuiApplication::focusWindow();
     }
 
+#ifdef Q_OS_LINUX_TIZEN
+    if (e->key == Qt::Key_Back && QGuiApplication::inputMethod() && QGuiApplication::inputMethod()->isVisible()) {
+        QGuiApplication::inputMethod()->hide();
+        return;
+    }
+#endif
+
     QKeyEvent ev(e->keyType, e->key, e->modifiers,
                  e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers,
                  e->unicode, e->repeat, e->repeatCount);
@@ -1825,10 +1832,6 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
     } else if (e->keyType == QEvent::KeyRelease && e->key == Qt::Key_Back && !backKeyPressAccepted && !ev.isAccepted()) {
         if (!window)
             qApp->quit();
-#ifdef Q_OS_LINUX_TIZEN
-        else if (QGuiApplication::inputMethod() && QGuiApplication::inputMethod()->isVisible())
-            QGuiApplication::inputMethod()->hide();
-#endif
         else
             QWindowSystemInterface::handleCloseEvent(window);
     }
