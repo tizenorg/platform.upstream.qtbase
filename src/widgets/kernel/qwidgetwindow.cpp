@@ -251,7 +251,9 @@ bool QWidgetWindow::event(QEvent *event)
     case QEvent::Show:
     case QEvent::Hide:
         return QWindow::event(event);
-
+    case QEvent::WindowBlocked:
+        qt_button_down = 0;
+        break;
     default:
         break;
     }
@@ -712,6 +714,10 @@ void QWidgetWindow::handleWindowStateChangedEvent(QWindowStateChangeEvent *event
     case Qt::WindowActive: // Not handled by QWindow
         break;
     }
+
+    // Note that widgetState == m_widget->data->window_state when triggered by QWidget::setWindowState().
+    if (!(widgetState & Qt::WindowMinimized))
+        m_widget->setAttribute(Qt::WA_Mapped);
 
     // Sent event if the state changed (that is, it is not triggered by
     // QWidget::setWindowState(), which also sends an event to the widget).
