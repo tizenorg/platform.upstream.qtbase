@@ -42,7 +42,7 @@ Summary:    Cross-platform application and UI framework
 Version:    5.2.0
 Release:    0
 Group:      Base/Libraries
-License:    LGPL-2.1 or GPL-3.0
+License:    LGPL-2.1+ or GPL-3.0
 URL:        http://qt.digia.com
 Source0:    %{name}-%{version}.tar.bz2
 Source1:    macros.qt5-default
