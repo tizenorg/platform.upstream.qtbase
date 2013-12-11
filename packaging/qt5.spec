@@ -69,10 +69,8 @@ BuildRequires:  readline-devel
 BuildRequires:  python
 BuildRequires:  pkgconfig(fontconfig)
 BuildRequires:  pkgconfig(xkbcommon)
-%if %{with wayland}
 BuildRequires:  pkgconfig(glesv2)
-%else
-BuildRequires:  pkgconfig(gles20)
+%if ! %{with wayland}
 BuildRequires:  pkgconfig(x11)
 BuildRequires:  pkgconfig(xcursor)
 BuildRequires:  pkgconfig(xcomposite)
