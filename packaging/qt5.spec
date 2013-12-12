@@ -70,8 +70,10 @@ BuildRequires:  python
 BuildRequires:  pkgconfig(fontconfig)
 BuildRequires:  pkgconfig(xkbcommon)
 BuildRequires:  pkgconfig(glesv2)
+%if %{with wayland}
 BuildRequires:  pkgconfig(egl)
-%if ! %{with wayland}
+%else
+BuildRequires:  pkgconfig(gl)
 BuildRequires:  pkgconfig(x11)
 BuildRequires:  pkgconfig(xcursor)
 BuildRequires:  pkgconfig(xcomposite)
@@ -110,11 +112,14 @@ Requires: qt5-plugin-generic-evdev
 Requires: qt5-plugin-imageformat-gif
 Requires: qt5-plugin-imageformat-ico
 Requires: qt5-plugin-imageformat-jpeg
+%ifnarch %arm armv7l
 Requires: qt5-plugin-platform-eglfs
+Requires: qt5-plugin-platform-minimalegl
+%endif
 Requires: qt5-plugin-platforminputcontext-ibus
 Requires: qt5-plugin-platform-linuxfb
 Requires: qt5-plugin-platform-minimal
-Requires: qt5-plugin-platform-minimalegl
+
 Requires: qt5-plugin-platform-offscreen
 Requires: qt5-plugin-printsupport-cups
 Requires: qt5-plugin-sqldriver-sqlite
@@ -242,6 +247,7 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 %description plugin-platform-offscreen
 This package contains the offscreen platform plugin
 
+%ifnarch %arm armv7l
 %package plugin-platform-eglfs
 Summary:    Eglfs platform plugin
 Group:      Base/Libraries
@@ -257,6 +263,7 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-platform-minimalegl
 This package contains the minimalegl platform plugin
+%endif
 
 %package plugin-platform-linuxfb
 Summary:    Linux framebuffer platform plugin
@@ -403,7 +410,11 @@ Summary:    Development files for QtOpenGL
 Group:      Base/Libraries
 Requires:   %{name}-qtopengl = %{version}-%{release}
 Requires:   pkgconfig(glesv2)
+%if %{with wayland}
 Requires:   pkgconfig(egl)
+%else
+Requires:   pkgconfig(gl)
+%endif
 
 
 %description qtopengl-devel
@@ -612,7 +623,6 @@ MAKEFLAGS=%{?_smp_mflags} \
 %endif
     -verbose \
     -no-gtkstyle \
-    -opengl es2 \
     -no-openvg \
     -nomake tests \
     -nomake examples \
@@ -1000,6 +1010,7 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/platforms/libqoffscreen.so
 
+%ifnarch %arm armv7l
 %files plugin-platform-eglfs
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/platforms/libqeglfs.so
@@ -1007,6 +1018,7 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %files plugin-platform-minimalegl
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/platforms/libqminimalegl.so
+%endif
 
 %files plugin-platform-linuxfb
 %defattr(-,root,root,-)
