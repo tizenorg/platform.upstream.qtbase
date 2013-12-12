@@ -70,8 +70,10 @@ BuildRequires:  python
 BuildRequires:  pkgconfig(fontconfig)
 BuildRequires:  pkgconfig(xkbcommon)
 BuildRequires:  pkgconfig(glesv2)
+BuildRequires:  pkgconfig(gl)
+%if %{with wayland}
 BuildRequires:  pkgconfig(egl)
-%if ! %{with wayland}
+%else
 BuildRequires:  pkgconfig(x11)
 BuildRequires:  pkgconfig(xcursor)
 BuildRequires:  pkgconfig(xcomposite)
@@ -612,7 +614,6 @@ MAKEFLAGS=%{?_smp_mflags} \
 %endif
     -verbose \
     -no-gtkstyle \
-    -opengl es2 \
     -no-openvg \
     -nomake tests \
     -nomake examples \
