@@ -1464,7 +1464,10 @@ QWidget::~QWidget()
     }
 
     if (d->declarativeData) {
-        QAbstractDeclarativeData::destroyed(d->declarativeData, this);
+        if (QAbstractDeclarativeData::destroyed)
+            QAbstractDeclarativeData::destroyed(d->declarativeData, this);
+        if (QAbstractDeclarativeData::destroyed_qml1)
+            QAbstractDeclarativeData::destroyed_qml1(d->declarativeData, this);
         d->declarativeData = 0;                 // don't activate again in ~QObject
     }
 
@@ -5033,6 +5036,8 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
         return;
 #endif // Q_WS_MAC
 
+    const bool asRoot = flags & DrawAsRoot;
+    bool onScreen = paintOnScreen();
 
     Q_Q(QWidget);
 #ifndef QT_NO_GRAPHICSEFFECT
@@ -5062,12 +5067,17 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 sharedPainter->restore();
             }
             sourced->context = 0;
+
+            // Native widgets need to be marked dirty on screen so painting will be done in correct context
+            // Same check as in the no effects case below.
+            if (backingStore && !onScreen && !asRoot && (q->internalWinId() || !q->nativeParentWidget()->isWindow()))
+                backingStore->markDirtyOnScreen(rgn, q, offset);
+
             return;
         }
     }
 #endif //QT_NO_GRAFFICSEFFECT
 
-    const bool asRoot = flags & DrawAsRoot;
     const bool alsoOnScreen = flags & DrawPaintOnScreen;
     const bool recursive = flags & DrawRecursive;
     const bool alsoInvisible = flags & DrawInvisible;
@@ -5081,7 +5091,6 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
         subtractOpaqueChildren(toBePainted, q->rect());
 
     if (!toBePainted.isEmpty()) {
-        bool onScreen = paintOnScreen();
         if (!onScreen || alsoOnScreen) {
             //update the "in paint event" flag
             if (q->testAttribute(Qt::WA_WState_InPaintEvent))
@@ -6999,23 +7008,23 @@ void QWidget::setUpdatesEnabled(bool enable)
 }
 
 /*!
-    Shows the widget and its child widgets. This function is
-    equivalent to setVisible(true) in the normal case, and equivalent
-    to showFullScreen() if the QStyleHints::showIsFullScreen() hint
-    is true and the window is not a popup.
+    Shows the widget and its child widgets.
 
-    \sa raise(), showEvent(), hide(), setVisible(), showMinimized(), showMaximized(),
-    showNormal(), isVisible(), windowFlags()
+    This is equivalent to calling showFullScreen(), showMaximized(), or setVisible(true),
+    depending on the platform's default behavior for the window flags.
+
+     \sa raise(), showEvent(), hide(), setVisible(), showMinimized(), showMaximized(),
+    showNormal(), isVisible(), windowFlags(), flags()
 */
 void QWidget::show()
 {
-    bool isPopup = data->window_flags & Qt::Popup & ~Qt::Window;
-    if (isWindow() && !isPopup && qApp->styleHints()->showIsFullScreen())
+    Qt::WindowState defaultState = QGuiApplicationPrivate::platformIntegration()->defaultWindowState(data->window_flags);
+    if (defaultState == Qt::WindowFullScreen)
         showFullScreen();
-    else if (isWindow() && !(data->window_flags & Qt::Dialog & ~Qt::Window) && !isPopup && QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::ShowIsMaximized).toBool())
+    else if (defaultState == Qt::WindowMaximized)
         showMaximized();
     else
-        setVisible(true);
+        setVisible(true); // FIXME: Why not showNormal(), like QWindow::show()?
 }
 
 /*! \internal
@@ -8240,7 +8249,10 @@ bool QWidget::event(QEvent *event)
         update(static_cast<QUpdateLaterEvent*>(event)->region());
         break;
     case QEvent::StyleAnimationUpdate:
-        update();
+        if (isVisible() && !window()->isMinimized()) {
+            event->accept();
+            update();
+        }
         break;
 
     case QEvent::WindowBlocked:

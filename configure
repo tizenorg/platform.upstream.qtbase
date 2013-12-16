@@ -611,7 +611,6 @@ CFG_OPENVG_LC_INCLUDES=no
 CFG_OPENVG_SHIVA=auto
 CFG_OPENVG_ON_OPENGL=auto
 CFG_EGL=auto
-CFG_SSE=auto
 CFG_FONTCONFIG=auto
 CFG_FREETYPE=auto
 CFG_HARFBUZZ=no
@@ -629,6 +628,7 @@ CFG_JAVASCRIPTCORE_JIT=auto
 CFG_PKGCONFIG=auto
 CFG_STACK_PROTECTOR_STRONG=auto
 CFG_SLOG2=auto
+CFG_PPS=auto
 CFG_SYSTEM_PROXIES=no
 
 # Target architecture
@@ -646,6 +646,7 @@ CFG_XINPUT=runtime
 CFG_XKB=auto
 CFG_XKBCOMMON=auto
 CFG_XCB=auto
+CFG_XCB_XLIB=auto
 CFG_XCB_GLX=no
 CFG_EGLFS=auto
 CFG_DIRECTFB=auto
@@ -683,6 +684,7 @@ CFG_MIPS_DSP=auto
 CFG_MIPS_DSPR2=auto
 CFG_CLOCK_GETTIME=auto
 CFG_CLOCK_MONOTONIC=auto
+CFG_POSIX_FALLOCATE=auto
 CFG_MREMAP=auto
 CFG_GETADDRINFO=auto
 CFG_IPV6IFNAME=auto
@@ -1154,13 +1156,6 @@ while [ "$#" -gt 0 ]; do
     libexecdir)
         QT_INSTALL_LIBEXECS="$VAL"
         ;;
-    sse)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_SSE="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-	;;
     opengl)
         if  [ "$VAL" = "auto" ] || [ "$VAL" = "desktop" ] ||
             [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] ||
@@ -1689,6 +1684,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    xcb-xlib)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_XCB_XLIB="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     wayland)
         CFG_OBSOLETE_WAYLAND=yes
         ;;
@@ -1765,6 +1767,13 @@ while [ "$#" -gt 0 ]; do
     slog2)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_SLOG2="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    pps)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_PPS="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -1918,7 +1927,11 @@ while [ "$#" -gt 0 ]; do
                 break
             fi
         done
-        [ "$found" = yes ] || ERROR=yes
+        if [ "$found" != "yes" ]; then
+            echo "$CURRENT_OPT: unknown argument"
+            ERROR=yes
+            continue
+        fi
 
         if [ "$VAR" = "sql" ]; then
             # set the CFG_SQL_driver
@@ -1941,9 +1954,6 @@ while [ "$#" -gt 0 ]; do
             IN_VAR="${VAR}"
 	    QMakeVar del "${IN_VAR}s" "$VAL"
 	    QMakeVar del "${PLUG_VAR}s" "$VAL"
-        fi
-        if [ "$ERROR" = "yes" ]; then
-           echo "$CURRENT_OPT: unknown argument"
         fi
         ;;
     v|verbose)
@@ -2326,6 +2336,9 @@ Third Party Libraries:
     -no-xinput2 ........ Do not compile XInput2 support.
  *  -xinput2 ........... Compile XInput2 support.
 
+    -no-xcb-xlib........ Do not compile Xcb-Xlib support.
+ *  -xcb-xlib........... Compile Xcb-Xlib support.
+
     -no-glib ........... Do not compile Glib support.
  +  -glib .............. Compile Glib support.
 
@@ -2454,6 +2467,9 @@ QNX/Blackberry options:
 
     -no-slog2 .......... Do not compile with slog2 support.
     -slog2 ............. Compile with slog2 support.
+
+    -no-pps ............ Do not compile with pps support.
+    -pps ............... Compile with pps support.
 
 MacOS/iOS options:
 
@@ -3318,7 +3334,7 @@ if [ "$XPLATFORM_IOS" = "yes" ]; then
     CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS examples tests"
     CFG_SHARED="no" # iOS builds should be static to be able to submit to the App Store
     CFG_CXX11="no" # C++11 support disabled for now
-    CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtconnectivity qtdoc qtgraphicaleffects qtlocation qtmacextras qtmultimedia qtquickcontrols qtserialport qttools qtwebkit qtwebkit-examples"
+    CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtconnectivity qtdoc qtlocation qtmacextras qtserialport qttools qtwebkit qtwebkit-examples"
 
     # If the user passes -sdk on the command line we build a SDK-specific Qt build.
     # Otherwise we build a joined simulator and device build, which is the default.
@@ -4200,6 +4216,9 @@ if [ "${CFG_SSE2}" = "auto" ]; then
 fi
 
 # detect sse3 support
+if [ "${CFG_SSE2}" = "no" ]; then
+    CFG_SSE3=no
+fi
 if [ "${CFG_SSE3}" = "auto" ]; then
     if compileTest common/sse3 "sse3"; then
        CFG_SSE3=yes
@@ -4209,6 +4228,9 @@ if [ "${CFG_SSE3}" = "auto" ]; then
 fi
 
 # detect ssse3 support
+if [ "${CFG_SSE3}" = "no" ]; then
+    CFG_SSSE3=no
+fi
 if [ "${CFG_SSSE3}" = "auto" ]; then
     if compileTest common/ssse3 "ssse3"; then
        CFG_SSSE3=yes
@@ -4218,6 +4240,9 @@ if [ "${CFG_SSSE3}" = "auto" ]; then
 fi
 
 # detect sse4.1 support
+if [ "${CFG_SSSE3}" = "no" ]; then
+    CFG_SSE4_1=no
+fi
 if [ "${CFG_SSE4_1}" = "auto" ]; then
     if compileTest common/sse4_1 "sse4_1"; then
        CFG_SSE4_1=yes
@@ -4227,6 +4252,9 @@ if [ "${CFG_SSE4_1}" = "auto" ]; then
 fi
 
 # detect sse4.2 support
+if [ "${CFG_SSE4_1}" = "no" ]; then
+    CFG_SSE4_2=no
+fi
 if [ "${CFG_SSE4_2}" = "auto" ]; then
     if compileTest common/sse4_2 "sse4_2"; then
        CFG_SSE4_2=yes
@@ -4236,6 +4264,9 @@ if [ "${CFG_SSE4_2}" = "auto" ]; then
 fi
 
 # detect avx support
+if [ "${CFG_SSE4_2}" = "no" ]; then
+    CFG_AVX=no
+fi
 if [ "${CFG_AVX}" = "auto" ]; then
     if compileTest common/avx "avx"; then
        case "$XQMAKESPEC" in
@@ -4342,6 +4373,15 @@ if [ "$XPLATFORM_QNX" = "yes" ]; then
             QMAKE_CONFIG="$QMAKE_CONFIG slog2"
         else
             CFG_SLOG2=no
+        fi
+    fi
+
+    if [ "$CFG_PPS" != "no" ]; then
+        if compileTest unix/pps "pps"; then
+            CFG_PPS=yes
+            QMAKE_CONFIG="$QMAKE_CONFIG qqnx_pps"
+        else
+            CFG_PPS=no
         fi
     fi
 fi
@@ -5051,6 +5091,11 @@ if [ "$CFG_TSLIB" != "no" ]; then
     fi
 fi
 
+# Check we actually have X11 :-)
+if compileTest x11/xlib "XLib"; then
+    QT_CONFIG="$QT_CONFIG xlib"
+fi
+
 if [ "$CFG_XCB" != "no" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xcb >= 1.5" 2>/dev/null; then
         QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags xcb 2>/dev/null`"
@@ -5096,19 +5141,13 @@ if [ "$CFG_XCB" != "no" ]; then
             fi
         fi
 
-        # Check for X11. Eventually we should port everything to XCB,
-        # but for now the port is incomplete and Xlib is a requirement.
-        if compileTest x11/xlib "XLib"; then
-            QT_CONFIG="$QT_CONFIG xlib"
-        else
-            echo "The test for linking against Xlib failed!"
-            echo " You might need to install dependency packages."
-            echo " See src/plugins/platforms/xcb/README."
-            exit 1
-        fi
-
-        if compileTest qpa/xcb-xlib "xcb-xlib" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
-            QT_CONFIG="$QT_CONFIG xcb-xlib"
+        if [ "$CFG_XCB_XLIB" != "no" ]; then
+            if compileTest qpa/xcb-xlib "xcb-xlib" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
+                QT_CONFIG="$QT_CONFIG xcb-xlib"
+                CFG_XCB_XLIB=yes
+            else
+                CFG_XCB_XLIB=no
+            fi
         fi
 
         if [ "$CFG_SM" != "no" ] && [ -n "$PKG_CONFIG" ]; then
@@ -5246,11 +5285,13 @@ elif [ "$CFG_XKBCOMMON" = "no" ]; then
 fi
 
 # EGL Support
-if [ "$CFG_EGL" = "yes" ] && [ "$CFG_OPENGL" = "no" ]; then
+if [ "$CFG_EGL" != "no" ]; then
+    if [ "$CFG_EGL" = "yes" ] && [ "$CFG_OPENGL" = "no" ]; then
         echo "EGL support was requested but OpenGL support is disabled."
-        echo "Either disable EGL support or enable OpenGL ES support."
+        echo "Either disable EGL support or enable OpenGL support."
         exit 101
-elif [ "$CFG_EGL" != "no" ]; then
+    fi
+
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists egl 2>/dev/null; then
         QMAKE_INCDIR_EGL=`$PKG_CONFIG --cflags-only-I egl 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
         QMAKE_LIBS_EGL=`$PKG_CONFIG --libs egl 2>/dev/null`
@@ -5400,6 +5441,15 @@ if [ "$CFG_CLOCK_GETTIME" = "yes" ] && [ "$CFG_CLOCK_MONOTONIC" = "auto" ]; then
     fi
 elif [ "$CFG_CLOCK_GETTIME" = "no" ]; then
     CFG_CLOCK_MONOTONIC=no
+fi
+
+# detect posix_fallocate
+if [ "$CFG_POSIX_FALLOCATE" = "auto" ]; then
+    if compileTest unix/posix_fallocate "posix_fallocate"; then
+        CFG_POSIX_FALLOCATE=yes
+    else
+        CFG_POSIX_FALLOCATE=no
+    fi
 fi
 
 # detect mremap
@@ -5718,6 +5768,9 @@ if [ "$CFG_CLOCK_GETTIME" = "yes" ]; then
 fi
 if [ "$CFG_CLOCK_MONOTONIC" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG clock-monotonic"
+fi
+if [ "$CFG_POSIX_FALLOCATE" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG posix_fallocate"
 fi
 if [ "$CFG_MREMAP" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG mremap"
@@ -6198,6 +6251,7 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_GLIB" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GLIB"
 [ "$CFG_QGTKSTYLE" != "yes" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STYLE_GTK"
 [ "$CFG_CLOCK_MONOTONIC" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CLOCK_MONOTONIC"
+[ "$CFG_POSIX_FALLOCATE" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_POSIX_FALLOCATE"
 [ "$CFG_MREMAP" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MREMAP"
 [ "$CFG_GETADDRINFO" = "no" ]&& QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GETADDRINFO"
 [ "$CFG_IPV6IFNAME" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IPV6IFNAME"
@@ -6671,6 +6725,7 @@ report_support "    LinuxFB .............." "$CFG_LINUXFB"
 report_support "    XCB .................." "$CFG_XCB" system "system library" qt "bundled copy"
 if [ "$CFG_XCB" != "no" ]; then
     report_support "      MIT-SHM ............" "$CFG_MITSHM"
+    report_support "      Xcb-Xlib ..........." "$CFG_XCB_XLIB"
     report_support "      Xcursor ............" "$CFG_XCURSOR" runtime "loaded at runtime"
     report_support "      Xfixes ............." "$CFG_XFIXES" runtime "loaded at runtime"
     report_support "      Xi ................." "$CFG_XINPUT" runtime "loaded at runtime"
@@ -6684,8 +6739,10 @@ if [ "$CFG_XCB" != "no" ]; then
     report_support "      XVideo ............." "$CFG_XVIDEO"
 fi
 report_support "  Session management ....." "$CFG_SM"
-[ "$XPLATFORM_QNX" = "yes" ] && \
+if [ "$XPLATFORM_QNX" = "yes" ]; then
     report_support "  SLOG2 .................." "$CFG_SLOG2"
+    report_support "  PPS ...................." "$CFG_PPS"
+fi
 report_support "  SQL drivers:"
 report_support "    DB2 .................." "$CFG_SQL_db2" plugin "plugin" yes "built into QtSql"
 report_support "    InterBase ............" "$CFG_SQL_ibase" plugin "plugin" yes "built into QtSql"

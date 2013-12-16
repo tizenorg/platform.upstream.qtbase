@@ -69,6 +69,7 @@ private slots:
     void testUnknownOptionErrorHandling();
     void testDoubleDash_data();
     void testDoubleDash();
+    void testDefaultValue();
     void testProcessNotCalled();
     void testEmptyArgsList();
     void testMissingOptionValue();
@@ -322,6 +323,17 @@ void tst_QCommandLineParser::testDoubleDash()
     QCOMPARE(parser.unknownOptionNames(), QStringList());
 }
 
+void tst_QCommandLineParser::testDefaultValue()
+{
+    QCommandLineOption opt(QStringLiteral("name"), QStringLiteral("desc"),
+                           QStringLiteral("valueName"), QStringLiteral("default"));
+    QCOMPARE(opt.defaultValues(), QStringList(QStringLiteral("default")));
+    opt.setDefaultValue(QStringLiteral(""));
+    QCOMPARE(opt.defaultValues(), QStringList());
+    opt.setDefaultValue(QStringLiteral("default"));
+    QCOMPARE(opt.defaultValues(), QStringList(QStringLiteral("default")));
+}
+
 void tst_QCommandLineParser::testProcessNotCalled()
 {
     QCoreApplication app(empty_argc, empty_argv);
@@ -557,15 +569,16 @@ void tst_QCommandLineParser::testQuoteEscaping()
     QProcess process;
     process.start("testhelper/qcommandlineparser_test_helper", QStringList() <<
             QString::number(QCommandLineParser::ParseAsCompactedShortOptions) <<
-            "-DKEY1=\"VALUE1\"" << "-DKEY2=\\\"VALUE2\\\"" <<
+            "\\\\server\\path" <<
+            "-DKEY1=\"VALUE1\""
             "-DQTBUG-15379=C:\\path\\'file.ext" <<
             "-DQTBUG-30628=C:\\temp\\'file'.ext");
     QVERIFY(process.waitForFinished(5000));
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QString output = process.readAll();
     QVERIFY2(!output.contains("ERROR"), qPrintable(output));
+    QVERIFY2(output.contains("\\\\server\\path"), qPrintable(output));
     QVERIFY2(output.contains("KEY1=\"VALUE1\""), qPrintable(output));
-    QVERIFY2(output.contains("KEY2=\\\"VALUE2\\\""), qPrintable(output));
     QVERIFY2(output.contains("QTBUG-15379=C:\\path\\'file.ext"), qPrintable(output));
     QVERIFY2(output.contains("QTBUG-30628=C:\\temp\\'file'.ext"), qPrintable(output));
 }

@@ -148,10 +148,12 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     QBackingStore *store = q->backingStore();
 
     if (!store) {
-        if (win && q->windowType() != Qt::Desktop)
-            q->setBackingStore(new QBackingStore(win));
-        else
+        if (win && q->windowType() != Qt::Desktop) {
+            if (q->isTopLevel())
+                q->setBackingStore(new QBackingStore(win));
+        } else {
             q->setAttribute(Qt::WA_PaintOnScreen, true);
+        }
     }
 
     setWindowModified_helper();
@@ -510,9 +512,9 @@ void QWidgetPrivate::show_sys()
 
     QWindow *window = q->windowHandle();
 
-    q->setAttribute(Qt::WA_Mapped);
     if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
         invalidateBuffer(q->rect());
+        q->setAttribute(Qt::WA_Mapped);
         if (q->isWindow() && q->windowModality() != Qt::NonModal && window) {
             // add our window to the modal window list
             QGuiApplicationPrivate::showModalWindow(window);

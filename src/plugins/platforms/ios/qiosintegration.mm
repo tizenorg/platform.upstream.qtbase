@@ -110,6 +110,8 @@ bool QIOSIntegration::hasCapability(Capability cap) const
         return true;
     case MultipleWindows:
         return true;
+    case WindowManagement:
+        return false;
     case ApplicationState:
         return true;
     default:
@@ -160,7 +162,7 @@ QPlatformServices *QIOSIntegration::services() const
 QVariant QIOSIntegration::styleHint(StyleHint hint) const
 {
     switch (hint) {
-    case ShowIsFullScreen:
+    case ShowIsMaximized:
         return true;
     case SetFocusOnTouchRelease:
         return true;
