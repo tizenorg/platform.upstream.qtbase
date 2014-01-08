@@ -462,6 +462,19 @@ typedef qptrdiff qintptr;
 #  define QT_FASTCALL
 #endif
 
+// enable gcc warnings for printf-style functions
+#if defined(Q_CC_GNU) && !defined(__INSURE__)
+#  if defined(Q_CC_MINGW) && !defined(Q_CC_CLANG)
+#    define Q_ATTRIBUTE_FORMAT_PRINTF(A, B) \
+         __attribute__((format(gnu_printf, (A), (B))))
+#  else
+#    define Q_ATTRIBUTE_FORMAT_PRINTF(A, B) \
+         __attribute__((format(printf, (A), (B))))
+#  endif
+#else
+#  define Q_ATTRIBUTE_FORMAT_PRINTF(A, B)
+#endif
+
 //defines the type for the WNDPROC on windows
 //the alignment needs to be forced for sse2 to not crash with mingw
 #if defined(Q_OS_WIN)
@@ -814,7 +827,6 @@ Q_CORE_EXPORT void qFreeAligned(void *ptr);
 #    pragma warning(disable: 4097) /* typedef-name 'identifier1' used as synonym for class-name 'identifier2' */
 #    pragma warning(disable: 4706) /* assignment within conditional expression */
 #    pragma warning(disable: 4786) /* truncating debug info after 255 characters */
-#    pragma warning(disable: 4660) /* template-class specialization 'identifier' is already instantiated */
 #    pragma warning(disable: 4355) /* 'this' : used in base member initializer list */
 #    pragma warning(disable: 4231) /* nonstandard extension used : 'extern' before template explicit instantiation */
 #    pragma warning(disable: 4710) /* function not inlined */
