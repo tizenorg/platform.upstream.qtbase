@@ -572,6 +572,8 @@ bool QWindowsDialogHelperBase<BaseClass>::show(Qt::WindowFlags,
                                                    QWindow *parent)
 {
     const bool modal = (windowModality != Qt::NonModal);
+    if (!parent)
+        parent = QGuiApplication::focusWindow(); // Need a parent window, else the application loses activation when closed.
     if (parent) {
         m_ownerWindow = QWindowsWindow::handleOf(parent);
     } else {
@@ -1633,8 +1635,8 @@ void QWindowsFileDialogHelper::selectFile(const QUrl &fileName)
     if (QWindowsContext::verboseDialogs)
         qDebug("%s %s" , __FUNCTION__, qPrintable(fileName.toString()));
 
-    if (QWindowsNativeFileDialogBase *nfd = nativeFileDialog())
-        nfd->selectFile(fileName.toLocalFile()); // ## should use QUrl::fileName() once it exists
+    if (hasNativeDialog()) // Might be invoked from the QFileDialog constructor.
+        nativeFileDialog()->selectFile(fileName.toLocalFile()); // ## should use QUrl::fileName() once it exists
 }
 
 QList<QUrl> QWindowsFileDialogHelper::selectedFiles() const
