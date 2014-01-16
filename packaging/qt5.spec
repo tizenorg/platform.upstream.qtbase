@@ -29,7 +29,7 @@
 # installed-but-unpackaged static libs.
 # This flag tells rpmbuild to behave.
 %bcond_with wayland
-
+%bcond_with x
 
 # Version is the date of latest commit in qtbase, followed by 'g' + few
 # characters of the last git commit ID.
@@ -69,10 +69,12 @@ BuildRequires:  readline-devel
 BuildRequires:  python
 BuildRequires:  pkgconfig(fontconfig)
 BuildRequires:  pkgconfig(xkbcommon)
-BuildRequires:  pkgconfig(glesv2)
 %if %{with wayland}
 BuildRequires:  pkgconfig(egl)
-%else
+BuildRequires:  pkgconfig(glesv2)
+%endif
+%if %{with x}
+BuildRequires:  pkgconfig(gles20)
 BuildRequires:  pkgconfig(gl)
 BuildRequires:  pkgconfig(x11)
 BuildRequires:  pkgconfig(xcursor)
@@ -87,7 +89,6 @@ BuildRequires:  pkgconfig(xt)
 BuildRequires:  pkgconfig(xtst)
 BuildRequires:  pkgconfig(xv)
 BuildRequires:  pkgconfig(aul)
-BuildRequires:  pkgconfig(scim)
 BuildRequires:  pkgconfig(xdamage)
 BuildRequires:  pkgconfig(xfixes)
 BuildRequires:  pkgconfig(xrender)
@@ -235,7 +236,7 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 %description plugin-platform-linuxfb
 This package contains the linuxfb platform plugin for Qt
 
-%if ! %{with wayland}
+%if %{with x}
 
 %package plugin-platform-xcb
 Summary:    XCB platform plugin
@@ -543,10 +544,16 @@ MAKEFLAGS=%{?_smp_mflags} \
     -developer-build \
     -no-warnings-are-errors \
 %endif
+    -platform devices/linux-g++-tizen \
+%if "%{profile}" != ""
+    -device-option TIZEN_PROFILE=%{profile} \
+%endif
 %if %{with wayland}
-    -platform devices/linux-g++-tizen-ivi \
+    -device-option QT_QPA_DEFAULT_PLATFORM=wayland \
 %else
-    -platform devices/linux-g++-tizen-mobile \
+%if %{with x}
+    -device-option QT_QPA_DEFAULT_PLATFORM=xcb \
+%endif
 %endif
     -prefix "%{_prefix}" \
     -bindir "%{_libdir}/qt5/bin" \
@@ -589,11 +596,11 @@ MAKEFLAGS=%{?_smp_mflags} \
     -nomake tests \
     -nomake examples \
     -no-xinput2 \
-%if %{with wayland}
-    -no-xcb
-%else
+%if %{with x}
     -xcb \
     -qt-xcb
+%else 
+    -no-xcb
 %endif
 
 
@@ -986,7 +993,7 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/platforms/libqlinuxfb.so
 
-%if ! %{with wayland}
+%if %{with x}
 
 %files plugin-platform-xcb
 %defattr(-,root,root,-)
