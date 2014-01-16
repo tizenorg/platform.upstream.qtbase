@@ -69,13 +69,11 @@ BuildRequires:  readline-devel
 BuildRequires:  python
 BuildRequires:  pkgconfig(fontconfig)
 BuildRequires:  pkgconfig(xkbcommon)
-%if %{with wayland}
+BuildRequires:  pkgconfig(gles20)
+%if "%{profile}" != "mobile"
 BuildRequires:  pkgconfig(egl)
-BuildRequires:  pkgconfig(glesv2)
 %endif
 %if %{with x}
-BuildRequires:  pkgconfig(gles20)
-BuildRequires:  pkgconfig(gl)
 BuildRequires:  pkgconfig(x11)
 BuildRequires:  pkgconfig(xcursor)
 BuildRequires:  pkgconfig(xcomposite)
@@ -210,7 +208,6 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 %description plugin-platform-offscreen
 This package contains the offscreen platform plugin
 
-%ifnarch %arm armv7l
 %package plugin-platform-eglfs
 Summary:    Eglfs platform plugin
 Group:      Base/Libraries
@@ -226,7 +223,6 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-platform-minimalegl
 This package contains the minimalegl platform plugin
-%endif
 
 %package plugin-platform-linuxfb
 Summary:    Linux framebuffer platform plugin
@@ -372,11 +368,9 @@ This package contains the QtOpenGL library
 Summary:    Development files for QtOpenGL
 Group:      Base/Libraries
 Requires:   %{name}-qtopengl = %{version}-%{release}
-Requires:   pkgconfig(glesv2)
-%if %{with wayland}
+Requires:   pkgconfig(gles20)
+%if "%{profile}" != "mobile"
 Requires:   pkgconfig(egl)
-%else
-Requires:   pkgconfig(gl)
 %endif
 
 
@@ -555,6 +549,7 @@ MAKEFLAGS=%{?_smp_mflags} \
     -device-option QT_QPA_DEFAULT_PLATFORM=xcb \
 %endif
 %endif
+    -opengl es2 \
     -prefix "%{_prefix}" \
     -bindir "%{_libdir}/qt5/bin" \
     -libdir "%{_libdir}" \
@@ -979,7 +974,6 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/platforms/libqoffscreen.so
 
-%ifnarch %arm armv7l
 %files plugin-platform-eglfs
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/platforms/libqeglfs.so
@@ -987,7 +981,6 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %files plugin-platform-minimalegl
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/platforms/libqminimalegl.so
-%endif
 
 %files plugin-platform-linuxfb
 %defattr(-,root,root,-)
