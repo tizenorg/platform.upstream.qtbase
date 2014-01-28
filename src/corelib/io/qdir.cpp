@@ -716,11 +716,12 @@ QString QDir::absoluteFilePath(const QString &fileName) const
         return fileName;
 
     d->resolveAbsoluteEntry();
+    const QString absoluteDirPath = d->absoluteDirEntry.filePath();
     if (fileName.isEmpty())
-        return d->absoluteDirEntry.filePath();
-    if (!d->absoluteDirEntry.isRoot())
-        return d->absoluteDirEntry.filePath() % QLatin1Char('/') % fileName;
-    return d->absoluteDirEntry.filePath() % fileName;
+        return absoluteDirPath;
+    if (!absoluteDirPath.endsWith(QLatin1Char('/')))
+        return absoluteDirPath % QLatin1Char('/') % fileName;
+    return absoluteDirPath % fileName;
 }
 
 /*!
@@ -855,7 +856,7 @@ QString QDir::fromNativeSeparators(const QString &pathName)
 /*!
     Changes the QDir's directory to \a dirName.
 
-    Returns \c true if the new directory exists and is readable;
+    Returns \c true if the new directory exists;
     otherwise returns \c false. Note that the logical cd() operation is
     not performed if the new directory does not exist.
 
@@ -923,7 +924,7 @@ bool QDir::cd(const QString &dirName)
     Changes directory by moving one directory up from the QDir's
     current directory.
 
-    Returns \c true if the new directory exists and is readable;
+    Returns \c true if the new directory exists;
     otherwise returns \c false. Note that the logical cdUp() operation is
     not performed if the new directory does not exist.
 

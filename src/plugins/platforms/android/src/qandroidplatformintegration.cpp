@@ -89,6 +89,10 @@ void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteA
         return &m_palettes;
     if (resource == "AndroidStyleFonts")
         return &m_fonts;
+    if (resource == "AndroidDeviceName") {
+        static QString deviceName = QtAndroid::deviceName();
+        return &deviceName;
+    }
     return 0;
 }
 
@@ -114,9 +118,21 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
 
     m_androidFDB = new QAndroidPlatformFontDatabase();
     m_androidPlatformServices = new QAndroidPlatformServices();
+
+#ifndef QT_NO_CLIPBOARD
     m_androidPlatformClipboard = new QAndroidPlatformClipboard();
+#endif
 
     m_androidSystemLocale = new QAndroidSystemLocale;
+}
+
+bool QAndroidPlatformIntegration::needsWorkaround()
+{
+    static bool needsWorkaround =
+            QtAndroid::deviceName().compare(QStringLiteral("samsung SM-T211"), Qt::CaseInsensitive) == 0
+            || QtAndroid::deviceName().compare(QStringLiteral("samsung SM-T210"), Qt::CaseInsensitive) == 0
+            || QtAndroid::deviceName().compare(QStringLiteral("samsung SM-T215"), Qt::CaseInsensitive) == 0;
+    return needsWorkaround;
 }
 
 bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
@@ -125,6 +141,11 @@ bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
         case ThreadedPixmaps: return true;
         case ApplicationState: return true;
         case NativeWidgets: return false;
+
+        case ThreadedOpenGL:
+            if (needsWorkaround())
+                return false;
+        // fall through
         default:
 #ifndef ANDROID_PLUGIN_OPENGL
         return QPlatformIntegration::hasCapability(cap);
@@ -199,6 +220,11 @@ QAndroidPlatformIntegration::~QAndroidPlatformIntegration()
     delete m_androidPlatformNativeInterface;
     delete m_androidFDB;
     delete m_androidSystemLocale;
+
+#ifndef QT_NO_CLIPBOARD
+    delete m_androidPlatformClipboard;
+#endif
+
     QtAndroid::setAndroidPlatformIntegration(NULL);
 }
 QPlatformFontDatabase *QAndroidPlatformIntegration::fontDatabase() const
@@ -209,11 +235,7 @@ QPlatformFontDatabase *QAndroidPlatformIntegration::fontDatabase() const
 #ifndef QT_NO_CLIPBOARD
 QPlatformClipboard *QAndroidPlatformIntegration::clipboard() const
 {
-static QAndroidPlatformClipboard *clipboard = 0;
-    if (!clipboard)
-        clipboard = new QAndroidPlatformClipboard;
-
-    return clipboard;
+    return m_androidPlatformClipboard;
 }
 #endif
 
