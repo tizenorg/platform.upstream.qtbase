@@ -28,8 +28,6 @@
 # libFOO.a files and as such rpmlint never complains about
 # installed-but-unpackaged static libs.
 # This flag tells rpmbuild to behave.
-%bcond_with wayland
-%bcond_with x
 
 # Version is the date of latest commit in qtbase, followed by 'g' + few
 # characters of the last git commit ID.
@@ -68,12 +66,8 @@ BuildRequires:  pam-devel
 BuildRequires:  readline-devel
 BuildRequires:  python
 BuildRequires:  pkgconfig(fontconfig)
-BuildRequires:  pkgconfig(xkbcommon)
+#BuildRequires:  pkgconfig(xkbcommon)
 BuildRequires:  pkgconfig(gles20)
-%if "%{profile}" != "mobile"
-BuildRequires:  pkgconfig(egl)
-%endif
-%if %{with x}
 BuildRequires:  pkgconfig(x11)
 BuildRequires:  pkgconfig(xcursor)
 BuildRequires:  pkgconfig(xcomposite)
@@ -91,7 +85,8 @@ BuildRequires:  pkgconfig(xdamage)
 BuildRequires:  pkgconfig(xfixes)
 BuildRequires:  pkgconfig(xrender)
 BuildRequires:  pkgconfig(xscrnsaver)
-%endif
+BuildRequires: pkgconfig(aul)
+BuildRequires: pkgconfig(scim)
 
 
 %description
@@ -137,7 +132,6 @@ Requires:   qtchooser
 
 %description qmake
 This package contains qmake
-
 
 %package plugin-bearer-connman
 Summary:    Connman bearer plugin
@@ -232,8 +226,6 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 %description plugin-platform-linuxfb
 This package contains the linuxfb platform plugin for Qt
 
-%if %{with x}
-
 %package plugin-platform-xcb
 Summary:    XCB platform plugin
 Group:      Base/Libraries
@@ -241,8 +233,6 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-platform-xcb
 This package contains the XCB platform plugin
-
-%endif
 
 %package plugin-printsupport-cups
 Summary:    CUPS print support plugin
@@ -268,22 +258,21 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 %description plugin-sqldriver-sqlite
 This package contains the sqlite sql driver plugin
 
+#%package plugin-platforminputcontext-compose
+#Summary:    Compose input context platform plugin
+#Group:      Base/Libraries
+#Requires:   %{name}-qtcore = %{version}-%{release}
 
-%package plugin-platforminputcontext-ibus
-Summary:    The ibus platform import context plugin
-Group:      Base/Libraries
+#%description plugin-platforminputcontext-compose
+#This package contains compose platform inputcontext plugin
+
+%package plugin-platform-inputcontext-tizenscim
+Summary:    tizenscim input context platform plugin
+Group:      Qt/Qt
 Requires:   %{name}-qtcore = %{version}-%{release}
 
-%description plugin-platforminputcontext-ibus
-This package contains the ibus platform input context plugin
-
-%package plugin-platforminputcontext-compose
-Summary:    Compose input context platform plugin
-Group:      Base/Libraries
-Requires:   %{name}-qtcore = %{version}-%{release}
-
-%description plugin-platforminputcontext-compose
-This package contains compose platform inputcontext plugin
+%description plugin-platform-inputcontext-tizenscim
+This package contains tizenscim platform inputcontext plugin
 
 %package plugin-generic-evdev
 Summary:    The evdev generic plugin
@@ -369,10 +358,6 @@ Summary:    Development files for QtOpenGL
 Group:      Base/Libraries
 Requires:   %{name}-qtopengl = %{version}-%{release}
 Requires:   pkgconfig(gles20)
-%if "%{profile}" != "mobile"
-Requires:   pkgconfig(egl)
-%endif
-
 
 %description qtopengl-devel
 This package contains the files necessary to develop
@@ -539,16 +524,11 @@ MAKEFLAGS=%{?_smp_mflags} \
     -no-warnings-are-errors \
 %endif
     -platform devices/linux-g++-tizen \
-%if "%{profile}" != ""
-    -device-option TIZEN_PROFILE=%{profile} \
+    -device-option TIZEN_PROFILE=mobile \
+%ifnarch armv7l armv7el
+    -D Q_OS_LINUX_TIZEN_SIMULATOR \
 %endif
-%if %{with wayland}
-    -device-option QT_QPA_DEFAULT_PLATFORM=wayland \
-%else
-%if %{with x}
     -device-option QT_QPA_DEFAULT_PLATFORM=xcb \
-%endif
-%endif
     -opengl es2 \
     -prefix "%{_prefix}" \
     -bindir "%{_libdir}/qt5/bin" \
@@ -591,16 +571,10 @@ MAKEFLAGS=%{?_smp_mflags} \
     -nomake tests \
     -nomake examples \
     -no-xinput2 \
-%if %{with x}
     -xcb \
     -qt-xcb
-%else 
-    -no-xcb
-%endif
-
 
 make %{?_smp_mflags}
-
 
 %install
 rm -rf %{buildroot}
@@ -986,13 +960,9 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/platforms/libqlinuxfb.so
 
-%if %{with x}
-
 %files plugin-platform-xcb
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/platforms/libqxcb.so
-
-%endif
 
 %files plugin-printsupport-cups
 %defattr(-,root,root,-)
@@ -1006,13 +976,13 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/sqldrivers/libqsqlite.so
 
-%files plugin-platforminputcontext-ibus
+%files plugin-platform-inputcontext-tizenscim
 %defattr(-,root,root,-)
-%{_libdir}/qt5/plugins/platforminputcontexts/libibusplatforminputcontextplugin.so
+%{_libdir}/qt5/plugins/platforminputcontexts/libtizenscimplatforminputcontextplugin.so
 
-%files plugin-platforminputcontext-compose
-%defattr(-,root,root,-)
-%{_libdir}/qt5/plugins/platforminputcontexts/libcomposeplatforminputcontextplugin.so
+#%files plugin-platforminputcontext-compose
+#%defattr(-,root,root,-)
+#%{_libdir}/qt5/plugins/platforminputcontexts/libcomposeplatforminputcontextplugin.so
 
 %files plugin-generic-evdev
 %defattr(-,root,root,-)
