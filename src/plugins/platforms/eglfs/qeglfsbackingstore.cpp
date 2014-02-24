@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
+#include "qeglfscursor.h"
 #include "qeglfsbackingstore.h"
 #include "qeglfscompositor.h"
-#include "qeglfscursor.h"
 #include "qeglfswindow.h"
 #include "qeglfscontext.h"
 

@@ -39,14 +39,22 @@
 **
 ****************************************************************************/
 
+#include <QtGui/private/qguiapplication_p.h>
+
+#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+#include <QtPlatformSupport/private/qevdevmousemanager_p.h>
+#include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
+#include <QtPlatformSupport/private/qevdevtouch_p.h>
+#endif
+
+#include <qpa/qplatformcursor.h>
+
 #include "qeglfsintegration.h"
 
 #include "qeglfswindow.h"
 #include "qeglfsbackingstore.h"
 #include "qeglfscompositor.h"
 #include "qeglfshooks.h"
-
-#include <QtGui/private/qguiapplication_p.h>
 
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
@@ -55,18 +63,12 @@
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 #include <QtPlatformSupport/private/qeglpbuffer_p.h>
 
-#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
-#include <QtPlatformSupport/private/qevdevmousemanager_p.h>
-#include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
-#include <QtPlatformSupport/private/qevdevtouch_p.h>
-#endif
 
 #include <qpa/qplatformwindow.h>
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
 #include <QtGui/QOffscreenSurface>
-#include <qpa/qplatformcursor.h>
 
 #include <qpa/qplatforminputcontextfactory_p.h>
 

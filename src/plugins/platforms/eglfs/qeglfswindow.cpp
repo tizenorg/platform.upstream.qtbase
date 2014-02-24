@@ -39,13 +39,14 @@
 **
 ****************************************************************************/
 
+#include <private/qguiapplication_p.h>
+
+#include "qeglfscursor.h"
 #include "qeglfswindow.h"
 #include "qeglfshooks.h"
-#include "qeglfscursor.h"
 #include "qeglfsbackingstore.h"
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformintegration.h>
-#include <private/qguiapplication_p.h>
 #include <QtGui/QOpenGLContext>
 
 #include <QtPlatformSupport/private/qeglconvenience_p.h>

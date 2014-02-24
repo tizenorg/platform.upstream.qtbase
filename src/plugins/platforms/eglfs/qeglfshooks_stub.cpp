@@ -38,9 +38,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include "qeglfshooks.h"
 #include "qeglfscursor.h"
+#include "qeglfshooks.h"
 #include <QtCore/QRegularExpression>
 
 #include <fcntl.h>

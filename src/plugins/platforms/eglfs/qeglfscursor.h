@@ -44,7 +44,6 @@
 
 #include <qpa/qplatformcursor.h>
 #include <QtGui/QOpenGLFunctions>
-#include "qeglfsscreen.h"
 
 QT_BEGIN_NAMESPACE
 

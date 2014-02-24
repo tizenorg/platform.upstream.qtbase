@@ -38,16 +38,16 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QtGui/QSurface>
+#include <QtDebug>
 
+#include "qeglfscursor.h"
 #include "qeglfscontext.h"
 #include "qeglfswindow.h"
-#include "qeglfscursor.h"
 #include "qeglfshooks.h"
 #include "qeglfsintegration.h"
 
 #include <QtPlatformSupport/private/qeglpbuffer_p.h>
-#include <QtGui/QSurface>
-#include <QtDebug>
 
 QT_BEGIN_NAMESPACE
 

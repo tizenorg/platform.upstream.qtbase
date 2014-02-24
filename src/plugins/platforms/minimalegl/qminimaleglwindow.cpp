@@ -38,10 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <qpa/qwindowsysteminterface.h>
 
 #include "qminimaleglwindow.h"
-
-#include <qpa/qwindowsysteminterface.h>
 
 QT_BEGIN_NAMESPACE
 

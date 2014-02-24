@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#include "qeglfscursor.h"
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QOpenGLContext>
 #include <QtCore/QJsonDocument>
@@ -47,6 +46,9 @@
 #include <QtCore/QJsonObject>
 #include <QtDebug>
 
+#include "qeglfscursor.h"
+#include "qeglfsscreen.h"
+#undef CursorShape
 QT_BEGIN_NAMESPACE
 
 QEglFSCursor::QEglFSCursor(QEglFSScreen *screen)

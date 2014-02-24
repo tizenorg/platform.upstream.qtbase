@@ -47,7 +47,7 @@
 #include <QtCore/QTextStream>
 
 #include <EGL/egl.h>
-
+#undef Cursor
 QT_BEGIN_NAMESPACE
 
 class QEglFSCursor;
