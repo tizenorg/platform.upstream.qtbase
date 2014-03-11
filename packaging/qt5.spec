@@ -38,7 +38,7 @@
 # evolve.
 Name:       qt5
 Summary:    Cross-platform application and UI framework
-Version:    5.2.2
+Version:    5.2.90+alpha
 Release:    0
 Group:      Base/Libraries
 License:    LGPL-2.1+ or GPL-3.0
@@ -698,6 +698,7 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %{_libdir}/qt5/bin/syncqt.pl
 %{_libdir}/qt5/bin/uic
 %{_libdir}/qt5/bin/qdoc
+%{_libdir}/qt5/bin/qlalr
 %{_docdir}/qt5/*
 
 %files qtcore
@@ -760,6 +761,9 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %{_datadir}/qt5/mkspecs/winrt-arm-msvc2012
 %{_datadir}/qt5/mkspecs/winrt-x64-msvc2012
 %{_datadir}/qt5/mkspecs/winrt-x86-msvc2012
+%{_datadir}/qt5/mkspecs/winrt-arm-msvc2013
+%{_datadir}/qt5/mkspecs/winrt-x64-msvc2013
+%{_datadir}/qt5/mkspecs/winrt-x86-msvc2013
 %config(noreplace) %{_sysconfdir}/rpm/macros.qt5-default
 
 %files qtdbus
