@@ -28,6 +28,25 @@
 # libFOO.a files and as such rpmlint never complains about
 # installed-but-unpackaged static libs.
 # This flag tells rpmbuild to behave.
+
+%if "%{tizen}" == "2.1"
+%define profile mobile
+%define _with_x 1
+%else
+%define _with_xkbcommon 1
+%define _with_ibus 1
+%endif
+
+%if "%{profile}" == "mobile"
+%define _with_tizenscim 1
+%else
+%define _with_egl 1
+%endif
+
+%bcond_with egl
+%bcond_with ibus
+%bcond_with tizenscim
+%bcond_with xkbcommon
 %bcond_with wayland
 %bcond_with x
 
@@ -68,11 +87,16 @@ BuildRequires:  pam-devel
 BuildRequires:  readline-devel
 BuildRequires:  python
 BuildRequires:  pkgconfig(fontconfig)
+%if %{with xkbcommon}
 BuildRequires:  pkgconfig(xkbcommon)
-BuildRequires:  pkgconfig(gles20)
-%if "%{profile}" != "mobile"
+%endif
+%if %{with egl}
 BuildRequires:  pkgconfig(egl)
 %endif
+%if %{with tizenscim}
+BuildRequires:  pkgconfig(scim)
+%endif
+BuildRequires:  pkgconfig(gles20)
 %if %{with x}
 BuildRequires:  pkgconfig(x11)
 BuildRequires:  pkgconfig(xcursor)
@@ -268,7 +292,7 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 %description plugin-sqldriver-sqlite
 This package contains the sqlite sql driver plugin
 
-
+%if %{with ibus}
 %package plugin-platforminputcontext-ibus
 Summary:    The ibus platform import context plugin
 Group:      Base/Libraries
@@ -276,7 +300,8 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-platforminputcontext-ibus
 This package contains the ibus platform input context plugin
-
+%endif
+%if %{with xkbcommon} && %{with x}
 %package plugin-platforminputcontext-compose
 Summary:    Compose input context platform plugin
 Group:      Base/Libraries
@@ -284,6 +309,17 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-platforminputcontext-compose
 This package contains compose platform inputcontext plugin
+%endif
+
+%if %{with tizenscim}
+%package plugin-platform-inputcontext-tizenscim
+Summary:    tizenscim input context platform plugin
+Group:      Qt/Qt
+Requires:   %{name}-qtcore = %{version}-%{release}
+
+%description plugin-platform-inputcontext-tizenscim
+This package contains tizenscim platform inputcontext plugin
+%endif
 
 %package plugin-generic-evdev
 Summary:    The evdev generic plugin
@@ -369,7 +405,7 @@ Summary:    Development files for QtOpenGL
 Group:      Base/Libraries
 Requires:   %{name}-qtopengl = %{version}-%{release}
 Requires:   pkgconfig(gles20)
-%if "%{profile}" != "mobile"
+%if %{with egl}
 Requires:   pkgconfig(egl)
 %endif
 
@@ -541,6 +577,9 @@ MAKEFLAGS=%{?_smp_mflags} \
     -platform devices/linux-g++-tizen \
 %if "%{profile}" != ""
     -device-option TIZEN_PROFILE=%{profile} \
+%if "%_repository" == "emulator"
+    -device-option TIZEN_EMULATOR=1 \
+%endif
 %endif
 %if %{with wayland}
     -device-option QT_QPA_DEFAULT_PLATFORM=wayland \
@@ -1010,13 +1049,22 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/sqldrivers/libqsqlite.so
 
+%if %{with ibus}
 %files plugin-platforminputcontext-ibus
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/platforminputcontexts/libibusplatforminputcontextplugin.so
-
+%endif
+%if %{with xkbcommon} && %{with x}
 %files plugin-platforminputcontext-compose
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/platforminputcontexts/libcomposeplatforminputcontextplugin.so
+%endif
+
+%if %{with tizenscim}
+%files plugin-platform-inputcontext-tizenscim
+%defattr(-,root,root,-)
+%{_libdir}/qt5/plugins/platforminputcontexts/libtizenscimplatforminputcontextplugin.so
+%endif
 
 %files plugin-generic-evdev
 %defattr(-,root,root,-)
