@@ -28,8 +28,18 @@
 # libFOO.a files and as such rpmlint never complains about
 # installed-but-unpackaged static libs.
 # This flag tells rpmbuild to behave.
+
+%if "%{tizen}" == "2.1"
+%define qt_tizen_2 1
+%define profile mobile
+%define _with_x 1
+%else
+%define qt_tizen_2 0
+%endif
+
 %bcond_with wayland
 %bcond_with x
+
 
 # Version is the date of latest commit in qtbase, followed by 'g' + few
 # characters of the last git commit ID.
@@ -68,11 +78,15 @@ BuildRequires:  pam-devel
 BuildRequires:  readline-devel
 BuildRequires:  python
 BuildRequires:  pkgconfig(fontconfig)
+%if !%{qt_tizen_2}
 BuildRequires:  pkgconfig(xkbcommon)
-BuildRequires:  pkgconfig(gles20)
+%endif
 %if "%{profile}" != "mobile"
 BuildRequires:  pkgconfig(egl)
+%else
+BuildRequires:  pkgconfig(scim)
 %endif
+BuildRequires:  pkgconfig(gles20)
 %if %{with x}
 BuildRequires:  pkgconfig(x11)
 BuildRequires:  pkgconfig(xcursor)
@@ -268,7 +282,7 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 %description plugin-sqldriver-sqlite
 This package contains the sqlite sql driver plugin
 
-
+%if !%{qt_tizen_2}
 %package plugin-platforminputcontext-ibus
 Summary:    The ibus platform import context plugin
 Group:      Base/Libraries
@@ -284,6 +298,17 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-platforminputcontext-compose
 This package contains compose platform inputcontext plugin
+%endif
+
+%if "%profile" == "mobile"
+%package plugin-platform-inputcontext-tizenscim
+Summary:    tizenscim input context platform plugin
+Group:      Qt/Qt
+Requires:   %{name}-qtcore = %{version}-%{release}
+
+%description plugin-platform-inputcontext-tizenscim
+This package contains tizenscim platform inputcontext plugin
+%endif
 
 %package plugin-generic-evdev
 Summary:    The evdev generic plugin
@@ -1010,6 +1035,7 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/sqldrivers/libqsqlite.so
 
+%if !%{qt_tizen_2}
 %files plugin-platforminputcontext-ibus
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/platforminputcontexts/libibusplatforminputcontextplugin.so
@@ -1017,6 +1043,13 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %files plugin-platforminputcontext-compose
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/platforminputcontexts/libcomposeplatforminputcontextplugin.so
+%endif
+
+%if "%{profile}" == "mobile"
+%files plugin-platform-inputcontext-tizenscim
+%defattr(-,root,root,-)
+%{_libdir}/qt5/plugins/platforminputcontexts/libtizenscimplatforminputcontextplugin.so
+%endif
 
 %files plugin-generic-evdev
 %defattr(-,root,root,-)
