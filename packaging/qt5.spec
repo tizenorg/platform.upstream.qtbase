@@ -56,6 +56,7 @@ URL:        http://qt.digia.com
 Source0:    %{name}-%{version}.tar.bz2
 Source1:    macros.qt5-default
 Source100:  qtbase-rpmlintrc
+Source1001: %{name}.manifest
 BuildRequires:  pkgconfig(alsa)
 BuildRequires:  pkgconfig(dbus-1)
 BuildRequires:  pkgconfig(freetype2)
@@ -552,6 +553,7 @@ This package contains the Qt5 development defaults package
 
 %prep
 %setup -q -n qt5-%{version}/qtbase
+cp %{SOURCE1001} .
 
 %build
 touch .git
@@ -718,6 +720,7 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files tools
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/bin/moc
 %{_libdir}/qt5/bin/rcc
 %{_libdir}/qt5/bin/syncqt.pl
@@ -728,6 +731,7 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtcore
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %dir %{_includedir}/qt5/
 %dir %{_datadir}/qt5/
 %dir %{_libdir}/qt5/plugins/
@@ -738,6 +742,7 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtcore-devel
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_includedir}/qt5/QtCore
 %{_libdir}/libQt5Core.prl
 %{_libdir}/libQt5Core.la
@@ -749,6 +754,7 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qmake
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/bin/qmake
 %{_datadir}/qt5/mkspecs/aix-*
 %{_datadir}/qt5/mkspecs/blackberry*
@@ -793,11 +799,13 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtdbus
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/libQt5DBus.so.*
 
 
 %files qtdbus-devel
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/bin/qdbuscpp2xml
 %{_libdir}/qt5/bin/qdbusxml2cpp
 %{_includedir}/qt5/QtDBus
@@ -811,11 +819,13 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtgui
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/libQt5Gui.so.*
 
 
 %files qtgui-devel
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_includedir}/qt5/QtGui
 %{_libdir}/libQt5Gui.prl
 %{_libdir}/libQt5Gui.la
@@ -827,11 +837,13 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtnetwork
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/libQt5Network.so.*
 
 
 %files qtnetwork-devel
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_includedir}/qt5/QtNetwork
 %{_libdir}/libQt5Network.prl
 %{_libdir}/libQt5Network.la
@@ -843,11 +855,13 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtopengl
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/libQt5OpenGL.so.*
 
 
 %files qtopengl-devel
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_includedir}/qt5/QtOpenGL
 %{_includedir}/qt5/QtOpenGLExtensions
 %{_libdir}/libQt5OpenGL.prl
@@ -868,11 +882,13 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtsql
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/libQt5Sql.so.*
 
 
 %files qtsql-devel
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_includedir}/qt5/QtSql
 %{_libdir}/libQt5Sql.prl
 %{_libdir}/libQt5Sql.la
@@ -884,10 +900,12 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qttest
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/libQt5Test.so.*
 
 %files qttest-devel
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_includedir}/qt5/QtTest
 %{_libdir}/libQt5Test.prl
 %{_libdir}/libQt5Test.la
@@ -898,10 +916,12 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtxml
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/libQt5Xml.so.*
 
 %files qtxml-devel
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_includedir}/qt5/QtXml
 %{_libdir}/libQt5Xml.prl
 %{_libdir}/libQt5Xml.la
@@ -912,10 +932,12 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtwidgets
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/libQt5Widgets.so.*
 
 %files qtwidgets-devel
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_includedir}/qt5/QtWidgets
 %{_libdir}/libQt5Widgets.prl
 %{_libdir}/libQt5Widgets.la
@@ -926,6 +948,7 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtplatformsupport-devel
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_includedir}/qt5/QtPlatformSupport
 %{_libdir}/libQt5PlatformSupport.prl
 %{_libdir}/libQt5PlatformSupport.la
@@ -935,6 +958,7 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtbootstrap-devel
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/libQt5Bootstrap.prl
 %{_libdir}/libQt5Bootstrap.la
 %{_libdir}/libQt5Bootstrap.a
@@ -943,10 +967,12 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtprintsupport
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/libQt5PrintSupport.so.*
 
 %files qtprintsupport-devel
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_includedir}/qt5/QtPrintSupport
 %{_libdir}/libQt5PrintSupport.prl
 %{_libdir}/libQt5PrintSupport.la
@@ -957,10 +983,12 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files qtconcurrent
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/libQt5Concurrent.so.*
 
 %files qtconcurrent-devel
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_includedir}/qt5/QtConcurrent
 %{_libdir}/libQt5Concurrent.prl
 %{_libdir}/libQt5Concurrent.la
@@ -973,90 +1001,110 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %files plugin-bearer-connman
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/plugins/bearer/libqconnmanbearer.so
 
 %files plugin-bearer-generic
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/plugins/bearer/libqgenericbearer.so
 
 %files plugin-bearer-nm
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/plugins/bearer/libqnmbearer.so
 
 %files plugin-imageformat-gif
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/plugins/imageformats/libqgif.so
 
 %files plugin-imageformat-ico
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/plugins/imageformats/libqico.so
 
 %files plugin-imageformat-jpeg
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/plugins/imageformats/libqjpeg.so
 
 %files plugin-platform-minimal
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/plugins/platforms/libqminimal.so
 
 %files plugin-platform-offscreen
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/plugins/platforms/libqoffscreen.so
 
 %files plugin-platform-eglfs
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/plugins/platforms/libqeglfs.so
 
 %files plugin-platform-minimalegl
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/plugins/platforms/libqminimalegl.so
 
 %files plugin-platform-linuxfb
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/plugins/platforms/libqlinuxfb.so
 
 %if %{with x}
 
 %files plugin-platform-xcb
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/plugins/platforms/libqxcb.so
 
 %endif
 
 %files plugin-printsupport-cups
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/plugins/printsupport/libcupsprintersupport.so
 
 %files plugin-accessible-widgets
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/plugins/accessible/libqtaccessiblewidgets.so
 
 %files plugin-sqldriver-sqlite
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/plugins/sqldrivers/libqsqlite.so
 
 %if !%{qt_tizen_2}
 %files plugin-platforminputcontext-ibus
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/plugins/platforminputcontexts/libibusplatforminputcontextplugin.so
 
 %files plugin-platforminputcontext-compose
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/plugins/platforminputcontexts/libcomposeplatforminputcontextplugin.so
 %endif
 
 %if "%{profile}" == "mobile"
 %files plugin-platform-inputcontext-tizenscim
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/plugins/platforminputcontexts/libtizenscimplatforminputcontextplugin.so
 %endif
 
 %files plugin-generic-evdev
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/qt5/plugins/generic/libqevdev*plugin.so
 
 %files -n qt5-default
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_sysconfdir}/xdg/qtchooser/default.conf
 
 #### No changelog section, separate $pkg.changes contains the history
