@@ -491,7 +491,7 @@ QXcbWindow::~QXcbWindow()
 void QXcbWindow::destroy()
 {
     if (connection()->focusWindow() == this)
-        connection()->setFocusWindow(0);
+        doFocusOut();
 
     if (m_syncCounter && m_usingSyncProtocol)
         Q_XCB_CALL(xcb_sync_destroy_counter(xcb_connection(), m_syncCounter));
@@ -560,7 +560,7 @@ QMargins QXcbWindow::frameMargins() const
 
             xcb_query_tree_reply_t *reply = xcb_query_tree_reply(xcb_connection(), cookie, NULL);
             if (reply) {
-                if (reply->root == reply->parent || virtualRoots.indexOf(reply->parent) != -1) {
+                if (reply->root == reply->parent || virtualRoots.indexOf(reply->parent) != -1 || reply->parent == XCB_WINDOW_NONE) {
                     foundRoot = true;
                 } else {
                     window = parent;
@@ -677,6 +677,9 @@ void QXcbWindow::show()
 
     Q_XCB_CALL(xcb_map_window(xcb_connection(), m_window));
 
+    if (QGuiApplication::modalWindow() == window())
+        requestActivateWindow();
+
     m_screen->windowShown(this);
 
     connection()->sync();
@@ -698,6 +701,68 @@ void QXcbWindow::hide()
     xcb_flush(xcb_connection());
 
     m_mapped = false;
+}
+
+static QWindow *tlWindow(QWindow *window)
+{
+    if (window && window->parent())
+        return tlWindow(window->parent());
+    return window;
+}
+
+bool QXcbWindow::relayFocusToModalWindow() const
+{
+    QWindow *w = tlWindow(static_cast<QWindowPrivate *>(QObjectPrivate::get(window()))->eventReceiver());
+    QWindow *modal_window = 0;
+    if (QGuiApplicationPrivate::instance()->isWindowBlocked(w,&modal_window) && modal_window != w) {
+        modal_window->requestActivate();
+        connection()->flush();
+        return true;
+    }
+
+    return false;
+}
+
+void QXcbWindow::doFocusIn()
+{
+    if (relayFocusToModalWindow())
+        return;
+    QWindow *w = static_cast<QWindowPrivate *>(QObjectPrivate::get(window()))->eventReceiver();
+    connection()->setFocusWindow(static_cast<QXcbWindow *>(w->handle()));
+    QWindowSystemInterface::handleWindowActivated(w, Qt::ActiveWindowFocusReason);
+}
+
+static bool focusInPeeker(QXcbConnection *connection, xcb_generic_event_t *event)
+{
+    if (!event) {
+        // FocusIn event is not in the queue, proceed with FocusOut normally.
+        QWindowSystemInterface::handleWindowActivated(0, Qt::ActiveWindowFocusReason);
+        return true;
+    }
+    uint response_type = event->response_type & ~0x80;
+    if (response_type == XCB_FOCUS_IN)
+        return true;
+
+    /* We are also interested in XEMBED_FOCUS_IN events */
+    if (response_type == XCB_CLIENT_MESSAGE) {
+        xcb_client_message_event_t *cme = (xcb_client_message_event_t *)event;
+        if (cme->type == connection->atom(QXcbAtom::_XEMBED)
+            && cme->data.data32[1] == XEMBED_FOCUS_IN)
+            return true;
+    }
+
+    return false;
+}
+
+void QXcbWindow::doFocusOut()
+{
+    if (relayFocusToModalWindow())
+        return;
+    connection()->setFocusWindow(0);
+    // Do not set the active window to 0 if there is a FocusIn coming.
+    // There is however no equivalent for XPutBackEvent so register a
+    // callback for QXcbConnection instead.
+    connection()->addPeekFunc(focusInPeeker);
 }
 
 struct QtMotifWmHints {
@@ -1520,6 +1585,8 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
             QWindowSystemInterface::handleCloseEvent(window());
         } else if (event->data.data32[0] == atom(QXcbAtom::WM_TAKE_FOCUS)) {
             connection()->setTime(event->data.data32[1]);
+            relayFocusToModalWindow();
+            return;
         } else if (event->data.data32[0] == atom(QXcbAtom::_NET_WM_PING)) {
             if (event->window == m_screen->root())
                 return;
@@ -1555,8 +1622,7 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
     } else if (event->type == atom(QXcbAtom::_XEMBED)) {
         handleXEmbedMessage(event);
     } else if (event->type == atom(QXcbAtom::_NET_ACTIVE_WINDOW)) {
-        connection()->setFocusWindow(this);
-        QWindowSystemInterface::handleWindowActivated(window(), Qt::ActiveWindowFocusReason);
+        doFocusIn();
     } else if (event->type == atom(QXcbAtom::MANAGER)
                || event->type == atom(QXcbAtom::_NET_WM_STATE)
                || event->type == atom(QXcbAtom::WM_CHANGE_STATE)) {
@@ -1788,6 +1854,9 @@ public:
 void QXcbWindow::handleEnterNotifyEvent(const xcb_enter_notify_event_t *event)
 {
     connection()->setTime(event->time);
+#ifdef XCB_USE_XINPUT2
+    connection()->handleEnterEvent(event);
+#endif
 
     if ((event->mode != XCB_NOTIFY_MODE_NORMAL && event->mode != XCB_NOTIFY_MODE_UNGRAB)
         || event->detail == XCB_NOTIFY_DETAIL_VIRTUAL
@@ -1875,41 +1944,13 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
 
 void QXcbWindow::handleFocusInEvent(const xcb_focus_in_event_t *)
 {
-    QWindow *w = window();
-    w = static_cast<QWindowPrivate *>(QObjectPrivate::get(w))->eventReceiver();
-    connection()->setFocusWindow(static_cast<QXcbWindow *>(w->handle()));
-    QWindowSystemInterface::handleWindowActivated(w, Qt::ActiveWindowFocusReason);
+    doFocusIn();
 }
 
-static bool focusInPeeker(QXcbConnection *connection, xcb_generic_event_t *event)
-{
-    if (!event) {
-        // FocusIn event is not in the queue, proceed with FocusOut normally.
-        QWindowSystemInterface::handleWindowActivated(0, Qt::ActiveWindowFocusReason);
-        return true;
-    }
-    uint response_type = event->response_type & ~0x80;
-    if (response_type == XCB_FOCUS_IN)
-        return true;
-
-    /* We are also interested in XEMBED_FOCUS_IN events */
-    if (response_type == XCB_CLIENT_MESSAGE) {
-        xcb_client_message_event_t *cme = (xcb_client_message_event_t *)event;
-        if (cme->type == connection->atom(QXcbAtom::_XEMBED)
-            && cme->data.data32[1] == XEMBED_FOCUS_IN)
-            return true;
-    }
-
-    return false;
-}
 
 void QXcbWindow::handleFocusOutEvent(const xcb_focus_out_event_t *)
 {
-    connection()->setFocusWindow(0);
-    // Do not set the active window to 0 if there is a FocusIn coming.
-    // There is however no equivalent for XPutBackEvent so register a
-    // callback for QXcbConnection instead.
-    connection()->addPeekFunc(focusInPeeker);
+    doFocusOut();
 }
 
 void QXcbWindow::updateSyncRequestCounter()

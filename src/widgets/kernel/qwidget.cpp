@@ -6002,10 +6002,8 @@ void QWidget::setFocus(Qt::FocusReason reason)
         if (!(testAttribute(Qt::WA_WState_Created) && window()->windowType() != Qt::Popup && internalWinId()))
             //setFocusWidget will already post a focus event for us (that the AT client receives) on Windows
 # endif
-# ifdef  Q_OS_UNIX
         // menus update the focus manually and this would create bogus events
         if (!(f->inherits("QMenuBar") || f->inherits("QMenu") || f->inherits("QMenuItem")))
-# endif
         {
             QAccessibleEvent event(f, QAccessible::Focus);
             QAccessible::updateAccessibility(&event);
@@ -8525,6 +8523,8 @@ void QWidget::mouseReleaseEvent(QMouseEvent *event)
     This event handler, for event \a event, can be reimplemented in a
     subclass to receive mouse double click events for the widget.
 
+    The default implementation calls mousePressEvent().
+
     \note The widget will also receive mouse press and mouse release
     events in addition to the double click event. It is up to the
     developer to ensure that the application interprets these events
@@ -8536,7 +8536,7 @@ void QWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void QWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    event->ignore();
+    mousePressEvent(event);
 }
 
 #ifndef QT_NO_WHEELEVENT

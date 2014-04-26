@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -65,12 +65,10 @@ public:
 
     Type type() const Q_DECL_OVERRIDE;
 
-    void fill(const QVectorPath &path, const QBrush &brush) Q_DECL_OVERRIDE;
+    void setState(QPainterState *s) Q_DECL_OVERRIDE;
 
+    void fill(const QVectorPath &path, const QBrush &brush) Q_DECL_OVERRIDE;
     void clip(const QVectorPath &path, Qt::ClipOperation op) Q_DECL_OVERRIDE;
-    void clip(const QRect &rect, Qt::ClipOperation op) Q_DECL_OVERRIDE;
-    void clip(const QRegion &region, Qt::ClipOperation op) Q_DECL_OVERRIDE;
-    void clip(const QPainterPath &path, Qt::ClipOperation op) Q_DECL_OVERRIDE;
 
     void clipEnabledChanged() Q_DECL_OVERRIDE;
     void penChanged() Q_DECL_OVERRIDE;
@@ -91,6 +89,13 @@ private:
     void drawGlyphRun(const D2D1_POINT_2F &pos, IDWriteFontFace *fontFace, const QFont &font,
                       int numGlyphs, const UINT16 *glyphIndices, const FLOAT *glyphAdvances,
                       const DWRITE_GLYPH_OFFSET *glyphOffsets, bool rtl);
+
+    void ensureBrush();
+    void ensureBrush(const QBrush &brush);
+    void ensurePen();
+    void ensurePen(const QPen &pen);
+
+    void rasterFill(const QVectorPath &path, const QBrush &brush);
 };
 
 QT_END_NAMESPACE
