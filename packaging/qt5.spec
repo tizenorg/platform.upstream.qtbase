@@ -32,9 +32,10 @@
 %if "%{tizen}" == "2.1"
 %define profile mobile
 %define _with_x 1
+%define xkb_config_root -xkb-config-root /etc/X11/xkb
 %else
 %define _with_xkbcommon 1
-%define _with_ibus 1
+%define xkb_config_root %{nil}
 %endif
 
 %if "%{profile}" == "mobile"
@@ -44,7 +45,6 @@
 %endif
 
 %bcond_with egl
-%bcond_with ibus
 %bcond_with tizenscim
 %bcond_with xkbcommon
 %bcond_with wayland
@@ -90,6 +90,7 @@ BuildRequires:  python
 BuildRequires:  pkgconfig(fontconfig)
 %if %{with xkbcommon}
 BuildRequires:  pkgconfig(xkbcommon)
+BuildRequires:  pkgconfig(xkeyboard-config)
 %endif
 %if %{with egl}
 BuildRequires:  pkgconfig(egl)
@@ -293,7 +294,6 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 %description plugin-sqldriver-sqlite
 This package contains the sqlite sql driver plugin
 
-%if %{with ibus}
 %package plugin-platforminputcontext-ibus
 Summary:    The ibus platform import context plugin
 Group:      Base/Libraries
@@ -301,8 +301,8 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-platforminputcontext-ibus
 This package contains the ibus platform input context plugin
-%endif
-%if %{with xkbcommon} && %{with x}
+
+%if %{with x}
 %package plugin-platforminputcontext-compose
 Summary:    Compose input context platform plugin
 Group:      Base/Libraries
@@ -632,6 +632,8 @@ MAKEFLAGS=%{?_smp_mflags} \
     -nomake tests \
     -nomake examples \
     -no-xinput2 \
+    -qt-xkbcommon \
+    %{xkb_config_root} \
 %if %{with x}
     -xcb \
     -qt-xcb
@@ -1092,13 +1094,12 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %manifest %{name}.manifest
 %{_libdir}/qt5/plugins/sqldrivers/libqsqlite.so
 
-%if %{with ibus}
 %files plugin-platforminputcontext-ibus
 %defattr(-,root,root,-)
 %manifest %{name}.manifest
 %{_libdir}/qt5/plugins/platforminputcontexts/libibusplatforminputcontextplugin.so
-%endif
-%if %{with xkbcommon} && %{with x}
+
+%if %{with x}
 %files plugin-platforminputcontext-compose
 %defattr(-,root,root,-)
 %manifest %{name}.manifest
