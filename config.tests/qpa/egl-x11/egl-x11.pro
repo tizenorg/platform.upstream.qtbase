@@ -10,3 +10,6 @@ for(p, QMAKE_LIBDIR_EGL) {
 CONFIG -= qt
 
 LIBS += -lxcb -lX11 -lX11-xcb
+
+# to autodetect egl x11 in Tizen 2.2 mobile
+tizen: DEFINES += SUPPORT_X11
