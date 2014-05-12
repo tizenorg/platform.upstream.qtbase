@@ -356,6 +356,9 @@ Summary:    The QtGui Library
 Group:      Base/Libraries
 Requires(post):     /sbin/ldconfig
 Requires(postun):   /sbin/ldconfig
+%if %{with wayland}
+Requires: qt5-qtwayland
+%endif
 
 %description qtgui
 This package contains the QtGui library
