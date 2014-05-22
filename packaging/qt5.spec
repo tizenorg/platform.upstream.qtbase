@@ -33,6 +33,9 @@
 %define profile mobile
 %define _with_x 1
 %define xkb_config_root -xkb-config-root /etc/X11/xkb
+%ifnarch armv7l armv7el
+%define _repository emulator
+%endif
 %else
 %define _with_xkbcommon 1
 %define xkb_config_root %{nil}
