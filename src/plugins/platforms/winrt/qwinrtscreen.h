@@ -78,6 +78,8 @@ namespace ABI {
         namespace Graphics {
             namespace Display {
                 struct IDisplayPropertiesStatics;
+                struct IDisplayInformationStatics;
+                struct IDisplayInformation;
             }
         }
 #ifdef Q_OS_WINPHONE
@@ -101,12 +103,6 @@ class QWinRTPageFlipper;
 class QWinRTCursor;
 class QWinRTInputContext;
 
-struct Pointer {
-    enum Type { Unknown, Mouse, TouchScreen, Tablet };
-    Type type;
-    QTouchDevice *device;
-};
-
 class QWinRTScreen : public QPlatformScreen
 {
 public:
@@ -115,6 +111,9 @@ public:
     int depth() const;
     QImage::Format format() const;
     QSurfaceFormat surfaceFormat() const;
+    QSizeF physicalSize() const Q_DECL_OVERRIDE;
+    QDpi logicalDpi() const Q_DECL_OVERRIDE;
+    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
     QWinRTInputContext *inputContext() const;
     QPlatformCursor *cursor() const;
     Qt::KeyboardModifiers keyboardModifiers() const;
@@ -156,7 +155,13 @@ private:
     HRESULT onVisibilityChanged(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IVisibilityChangedEventArgs *args);
     HRESULT onAutomationProviderRequested(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IAutomationProviderRequestedEventArgs *args);
 
+#if _MSC_VER<=1700
     HRESULT onOrientationChanged(IInspectable *);
+    HRESULT onDpiChanged(IInspectable *);
+#else
+    HRESULT onOrientationChanged(ABI::Windows::Graphics::Display::IDisplayInformation *, IInspectable *);
+    HRESULT onDpiChanged(ABI::Windows::Graphics::Display::IDisplayInformation *, IInspectable *);
+#endif
 
 #ifdef Q_OS_WINPHONE
     HRESULT onBackButtonPressed(IInspectable *, ABI::Windows::Phone::UI::Input::IBackPressedEventArgs *args);
@@ -165,9 +170,11 @@ private:
     ABI::Windows::UI::Core::ICoreWindow *m_coreWindow;
     ABI::Windows::UI::ViewManagement::IApplicationViewStatics *m_applicationView;
     ABI::Windows::ApplicationModel::Core::ICoreApplication *m_application;
-    QRect m_geometry;
+
+    QRectF m_geometry;
     QImage::Format m_format;
     QSurfaceFormat m_surfaceFormat;
+    qreal m_dpi;
     int m_depth;
     QWinRTInputContext *m_inputContext;
     QWinRTCursor *m_cursor;
@@ -176,14 +183,20 @@ private:
     EGLDisplay m_eglDisplay;
     EGLSurface m_eglSurface;
 
-    ABI::Windows::Graphics::Display::IDisplayPropertiesStatics *m_displayProperties;
+#if _MSC_VER<=1700
+    ABI::Windows::Graphics::Display::IDisplayPropertiesStatics *m_displayInformation;
+#else
+    ABI::Windows::Graphics::Display::IDisplayInformationStatics *m_displayInformationFactory;
+    ABI::Windows::Graphics::Display::IDisplayInformation *m_displayInformation;
+#endif
+    qreal m_devicePixelRatio;
     Qt::ScreenOrientation m_nativeOrientation;
     Qt::ScreenOrientation m_orientation;
 
 #ifndef Q_OS_WINPHONE
     QHash<quint32, QPair<Qt::Key, QString> > m_activeKeys;
 #endif
-    QHash<quint32, Pointer> m_pointers;
+    QTouchDevice *m_touchDevice;
     QHash<quint32, QWindowSystemInterface::TouchPoint> m_touchPoints;
 };
 

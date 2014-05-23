@@ -58,7 +58,6 @@
 #include <QtGui/private/qfontengine_p.h>
 #include <QtGui/private/qstatictext_p.h>
 
-#include <wrl.h>
 using Microsoft::WRL::ComPtr;
 
 QT_BEGIN_NAMESPACE
@@ -212,118 +211,16 @@ private:
     bool m_roundCoordinates;
 };
 
-static ComPtr<ID2D1PathGeometry1> painterPathToID2D1PathGeometry(const QPainterPath &path, bool alias)
-{
-    Direct2DPathGeometryWriter writer;
-    if (!writer.begin())
-        return NULL;
+struct D2DVectorPathCache {
+    ComPtr<ID2D1PathGeometry1> aliased;
+    ComPtr<ID2D1PathGeometry1> antiAliased;
 
-    writer.setWindingFillEnabled(path.fillRule() == Qt::WindingFill);
-    writer.setAliasingEnabled(alias);
-
-    for (int i = 0; i < path.elementCount(); i++) {
-        const QPainterPath::Element element = path.elementAt(i);
-
-        switch (element.type) {
-        case QPainterPath::MoveToElement:
-            writer.moveTo(element);
-            break;
-
-        case QPainterPath::LineToElement:
-            writer.lineTo(element);
-            break;
-
-        case QPainterPath::CurveToElement:
-        {
-            const QPainterPath::Element data1 = path.elementAt(++i);
-            const QPainterPath::Element data2 = path.elementAt(++i);
-
-            Q_ASSERT(i < path.elementCount());
-
-            Q_ASSERT(data1.type == QPainterPath::CurveToDataElement);
-            Q_ASSERT(data2.type == QPainterPath::CurveToDataElement);
-
-            writer.curveTo(element, data1, data2);
-        }
-            break;
-
-        case QPainterPath::CurveToDataElement:
-            qWarning("%s: Unhandled Curve Data Element", __FUNCTION__);
-            break;
-        }
+    static void cleanup_func(QPaintEngineEx *engine, void *data) {
+        Q_UNUSED(engine);
+        D2DVectorPathCache *e = static_cast<D2DVectorPathCache *>(data);
+        delete e;
     }
-
-    writer.close();
-    return writer.geometry();
-}
-
-static ComPtr<ID2D1PathGeometry1> vectorPathToID2D1PathGeometry(const QVectorPath &path, bool alias)
-{
-    Direct2DPathGeometryWriter writer;
-    if (!writer.begin())
-        return NULL;
-
-    writer.setWindingFillEnabled(path.hasWindingFill());
-    writer.setAliasingEnabled(alias);
-
-    const QPainterPath::ElementType *types = path.elements();
-    const int count = path.elementCount();
-    const qreal *points = path.points();
-
-    Q_ASSERT(points);
-
-    if (types) {
-        qreal x, y;
-
-        for (int i = 0; i < count; i++) {
-            x = points[i * 2];
-            y = points[i * 2 + 1];
-
-            switch (types[i]) {
-            case QPainterPath::MoveToElement:
-                writer.moveTo(QPointF(x, y));
-                break;
-
-            case QPainterPath::LineToElement:
-                writer.lineTo(QPointF(x, y));
-                break;
-
-            case QPainterPath::CurveToElement:
-            {
-                Q_ASSERT((i + 2) < count);
-                Q_ASSERT(types[i+1] == QPainterPath::CurveToDataElement);
-                Q_ASSERT(types[i+2] == QPainterPath::CurveToDataElement);
-
-                i++;
-                const qreal x2 = points[i * 2];
-                const qreal y2 = points[i * 2 + 1];
-
-                i++;
-                const qreal x3 = points[i * 2];
-                const qreal y3 = points[i * 2 + 1];
-
-                writer.curveTo(QPointF(x, y), QPointF(x2, y2), QPointF(x3, y3));
-            }
-                break;
-
-            case QPainterPath::CurveToDataElement:
-                qWarning("%s: Unhandled Curve Data Element", __FUNCTION__);
-                break;
-            }
-        }
-    } else {
-        writer.moveTo(QPointF(points[0], points[1]));
-        for (int i = 1; i < count; i++)
-            writer.lineTo(QPointF(points[i * 2], points[i * 2 + 1]));
-    }
-
-    if (writer.isInFigure())
-        if (path.hasImplicitClose())
-            writer.lineTo(QPointF(points[0], points[1]));
-
-    writer.close();
-    return writer.geometry();
-}
+};
 
 class QWindowsDirect2DPaintEnginePrivate : public QPaintEngineExPrivate
 {
@@ -345,6 +242,8 @@ public:
     QStack<ClipType> pushedClips;
 
     QPointF currentBrushOrigin;
+
+    QHash< QFont, ComPtr<IDWriteFontFace> > fontCache;
 
     struct {
         bool emulate;
@@ -381,8 +280,7 @@ public:
     inline D2D1_INTERPOLATION_MODE interpolationMode() const
     {
         Q_Q(const QWindowsDirect2DPaintEngine);
-        // XXX are we choosing the right d2d interpolation modes?
-        return (q->state()->renderHints & QPainter::SmoothPixmapTransform) ? D2D1_INTERPOLATION_MODE_HIGH_QUALITY_CUBIC
+        return (q->state()->renderHints & QPainter::SmoothPixmapTransform) ? D2D1_INTERPOLATION_MODE_LINEAR
                                                                            : D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
     }
 
@@ -426,7 +324,7 @@ public:
             dc()->PushAxisAlignedClip(rect, antialiasMode());
             pushedClips.push(AxisAlignedClip);
         } else {
-            ComPtr<ID2D1PathGeometry1> geometry = vectorPathToID2D1PathGeometry(path, antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
+            ComPtr<ID2D1PathGeometry1> geometry = vectorPathToID2D1PathGeometry(path);
             if (!geometry) {
                 qWarning("%s: Could not convert vector path to painter path!", __FUNCTION__);
                 return;
@@ -592,9 +490,13 @@ public:
 
         props.miterLimit = newPen.miterLimit() * qreal(2.0); // D2D and Qt miter specs differ
         props.dashOffset = newPen.dashOffset();
-        props.transformType = qIsNull(newPen.widthF()) ? D2D1_STROKE_TRANSFORM_TYPE_HAIRLINE
-                                                       : newPen.isCosmetic() ? D2D1_STROKE_TRANSFORM_TYPE_FIXED
-                                                                             : D2D1_STROKE_TRANSFORM_TYPE_NORMAL;
+
+        if (newPen.widthF() == 0)
+            props.transformType = D2D1_STROKE_TRANSFORM_TYPE_HAIRLINE;
+        else if (qt_pen_is_cosmetic(newPen, q->state()->renderHints))
+            props.transformType = D2D1_STROKE_TRANSFORM_TYPE_FIXED;
+        else
+            props.transformType = D2D1_STROKE_TRANSFORM_TYPE_NORMAL;
 
         switch (newPen.style()) {
         case Qt::SolidLine:
@@ -831,6 +733,104 @@ public:
         return result;
     }
 
+    ComPtr<ID2D1PathGeometry1> vectorPathToID2D1PathGeometry(const QVectorPath &path)
+    {
+        Q_Q(QWindowsDirect2DPaintEngine);
+
+        const bool alias = !q->antiAliasingEnabled();
+
+        QVectorPath::CacheEntry *cacheEntry = path.isCacheable() ? path.lookupCacheData(q)
+                                                                 : Q_NULLPTR;
+
+        if (cacheEntry) {
+            D2DVectorPathCache *e = static_cast<D2DVectorPathCache *>(cacheEntry->data);
+            if (alias && e->aliased)
+                return e->aliased;
+            else if (!alias && e->antiAliased)
+                return e->antiAliased;
+        }
+
+        Direct2DPathGeometryWriter writer;
+        if (!writer.begin())
+            return NULL;
+
+        writer.setWindingFillEnabled(path.hasWindingFill());
+        writer.setAliasingEnabled(alias);
+
+        const QPainterPath::ElementType *types = path.elements();
+        const int count = path.elementCount();
+        const qreal *points = path.points();
+
+        Q_ASSERT(points);
+
+        if (types) {
+            qreal x, y;
+
+            for (int i = 0; i < count; i++) {
+                x = points[i * 2];
+                y = points[i * 2 + 1];
+
+                switch (types[i]) {
+                case QPainterPath::MoveToElement:
+                    writer.moveTo(QPointF(x, y));
+                    break;
+
+                case QPainterPath::LineToElement:
+                    writer.lineTo(QPointF(x, y));
+                    break;
+
+                case QPainterPath::CurveToElement:
+                {
+                    Q_ASSERT((i + 2) < count);
+                    Q_ASSERT(types[i+1] == QPainterPath::CurveToDataElement);
+                    Q_ASSERT(types[i+2] == QPainterPath::CurveToDataElement);
+
+                    i++;
+                    const qreal x2 = points[i * 2];
+                    const qreal y2 = points[i * 2 + 1];
+
+                    i++;
+                    const qreal x3 = points[i * 2];
+                    const qreal y3 = points[i * 2 + 1];
+
+                    writer.curveTo(QPointF(x, y), QPointF(x2, y2), QPointF(x3, y3));
+                }
+                    break;
+
+                case QPainterPath::CurveToDataElement:
+                    qWarning("%s: Unhandled Curve Data Element", __FUNCTION__);
+                    break;
+                }
+            }
+        } else {
+            writer.moveTo(QPointF(points[0], points[1]));
+            for (int i = 1; i < count; i++)
+                writer.lineTo(QPointF(points[i * 2], points[i * 2 + 1]));
+        }
+
+        if (writer.isInFigure())
+            if (path.hasImplicitClose())
+                writer.lineTo(QPointF(points[0], points[1]));
+
+        writer.close();
+        ComPtr<ID2D1PathGeometry1> geometry = writer.geometry();
+
+        if (path.isCacheable()) {
+            if (!cacheEntry)
+                cacheEntry = path.addCacheData(q, new D2DVectorPathCache, D2DVectorPathCache::cleanup_func);
+
+            D2DVectorPathCache *e = static_cast<D2DVectorPathCache *>(cacheEntry->data);
+            if (alias)
+                e->aliased = geometry;
+            else
+                e->antiAliased = geometry;
+        } else {
+            path.makeCacheable();
+        }
+
+        return geometry;
+    }
+
     void updateHints()
     {
         dc()->SetAntialiasMode(antialiasMode());
@@ -867,7 +867,7 @@ bool QWindowsDirect2DPaintEngine::begin(QPaintDevice * pdev)
         QPainterPath p;
         p.addRegion(systemClip());
 
-        ComPtr<ID2D1PathGeometry1> geometry = painterPathToID2D1PathGeometry(p, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
+        ComPtr<ID2D1PathGeometry1> geometry = d->vectorPathToID2D1PathGeometry(qtVectorPathForPath(p));
         if (!geometry)
             return false;
 
@@ -930,6 +930,33 @@ void QWindowsDirect2DPaintEngine::setState(QPainterState *s)
     transformChanged();
 }
 
+void QWindowsDirect2DPaintEngine::draw(const QVectorPath &path)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+
+    ComPtr<ID2D1Geometry> geometry = d->vectorPathToID2D1PathGeometry(path);
+    if (!geometry) {
+        qWarning("%s: Could not convert path to d2d geometry", __FUNCTION__);
+        return;
+    }
+
+    const QBrush &brush = state()->brush;
+    if (qbrush_style(brush) != Qt::NoBrush) {
+        if (emulationRequired(BrushEmulation))
+            rasterFill(path, brush);
+        else
+            fill(geometry.Get(), brush);
+    }
+
+    const QPen &pen = state()->pen;
+    if (qpen_style(pen) != Qt::NoPen && qbrush_style(qpen_brush(pen)) != Qt::NoBrush) {
+        if (emulationRequired(PenEmulation))
+            QPaintEngineEx::stroke(path, pen);
+        else
+            stroke(geometry.Get(), pen);
+    }
+}
+
 void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 {
     Q_D(QWindowsDirect2DPaintEngine);
@@ -939,7 +966,6 @@ void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &br
         return;
 
     ensureBrush(brush);
-
     if (emulationRequired(BrushEmulation)) {
         rasterFill(path, brush);
         return;
@@ -948,13 +974,63 @@ void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &br
     if (!d->brush.brush)
         return;
 
-    ComPtr<ID2D1Geometry> geometry = vectorPathToID2D1PathGeometry(path, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
+    ComPtr<ID2D1Geometry> geometry = d->vectorPathToID2D1PathGeometry(path);
     if (!geometry) {
         qWarning("%s: Could not convert path to d2d geometry", __FUNCTION__);
         return;
     }
 
     d->dc()->FillGeometry(geometry.Get(), d->brush.brush.Get());
+}
+
+void QWindowsDirect2DPaintEngine::fill(ID2D1Geometry *geometry, const QBrush &brush)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    D2D_TAG(D2DDebugFillTag);
+
+    ensureBrush(brush);
+    if (!d->brush.brush)
+        return;
+
+    d->dc()->FillGeometry(geometry, d->brush.brush.Get());
+}
+
+void QWindowsDirect2DPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    D2D_TAG(D2DDebugFillTag);
+
+    if (path.isEmpty())
+        return;
+
+    ensurePen(pen);
+    if (emulationRequired(PenEmulation)) {
+        QPaintEngineEx::stroke(path, pen);
+        return;
+    }
+
+    if (!d->pen.brush)
+        return;
+
+    ComPtr<ID2D1Geometry> geometry = d->vectorPathToID2D1PathGeometry(path);
+    if (!geometry) {
+        qWarning("%s: Could not convert path to d2d geometry", __FUNCTION__);
+        return;
+    }
+
+    d->dc()->DrawGeometry(geometry.Get(), d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+}
+
+void QWindowsDirect2DPaintEngine::stroke(ID2D1Geometry *geometry, const QPen &pen)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    D2D_TAG(D2DDebugFillTag);
+
+    ensurePen(pen);
+    if (!d->pen.brush)
+        return;
+
+    d->dc()->DrawGeometry(geometry, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
 }
 
 void QWindowsDirect2DPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
@@ -1291,44 +1367,6 @@ void QWindowsDirect2DPaintEngine::drawPixmap(const QRectF &r,
     }
 }
 
-static ComPtr<IDWriteFontFace> fontFaceFromFontEngine(QFontEngine *fe)
-{
-    ComPtr<IDWriteFontFace> fontFace;
-
-    switch (fe->type()) {
-    case QFontEngine::Win:
-    {
-        QWindowsFontEngine *wfe = static_cast<QWindowsFontEngine *>(fe);
-        QSharedPointer<QWindowsFontEngineData> wfed = wfe->fontEngineData();
-
-        HGDIOBJ oldfont = wfe->selectDesignFont();
-        HRESULT hr = QWindowsDirect2DContext::instance()->dwriteGdiInterop()->CreateFontFaceFromHdc(wfed->hdc, &fontFace);
-        DeleteObject(SelectObject(wfed->hdc, oldfont));
-        if (FAILED(hr))
-            qWarning("%s: Could not create DirectWrite fontface from HDC: %#x", __FUNCTION__, hr);
-
-    }
-        break;
-
-#ifndef QT_NO_DIRECTWRITE
-
-    case QFontEngine::DirectWrite:
-    {
-        QWindowsFontEngineDirectWrite *wfedw = static_cast<QWindowsFontEngineDirectWrite *>(fe);
-        fontFace = wfedw->directWriteFontFace();
-    }
-        break;
-
-#endif // QT_NO_DIRECTWRITE
-
-    default:
-        qWarning("%s: Unknown font engine!", __FUNCTION__);
-        break;
-    }
-
-    return fontFace;
-}
-
 void QWindowsDirect2DPaintEngine::drawStaticTextItem(QStaticTextItem *staticTextItem)
 {
     Q_D(QWindowsDirect2DPaintEngine);
@@ -1340,24 +1378,22 @@ void QWindowsDirect2DPaintEngine::drawStaticTextItem(QStaticTextItem *staticText
     ensurePen();
 
     // If we can't support the current configuration with Direct2D, fall back to slow path
-    // Most common cases are perspective transform and gradient brush as pen
-    if ((state()->transform().isAffine() == false) || d->pen.emulate) {
+    if (emulationRequired(PenEmulation)) {
         QPaintEngineEx::drawStaticTextItem(staticTextItem);
         return;
     }
 
-    ComPtr<IDWriteFontFace> fontFace = fontFaceFromFontEngine(staticTextItem->fontEngine());
+    ComPtr<IDWriteFontFace> fontFace = fontFaceFromFontEngine(staticTextItem->font, staticTextItem->fontEngine());
     if (!fontFace) {
         qWarning("%s: Could not find font - falling back to slow text rendering path.", __FUNCTION__);
         QPaintEngineEx::drawStaticTextItem(staticTextItem);
         return;
     }
 
-    QVector<UINT16> glyphIndices(staticTextItem->numGlyphs);
-    QVector<FLOAT> glyphAdvances(staticTextItem->numGlyphs);
-    QVector<DWRITE_GLYPH_OFFSET> glyphOffsets(staticTextItem->numGlyphs);
+    QVarLengthArray<UINT16> glyphIndices(staticTextItem->numGlyphs);
+    QVarLengthArray<FLOAT> glyphAdvances(staticTextItem->numGlyphs);
+    QVarLengthArray<DWRITE_GLYPH_OFFSET> glyphOffsets(staticTextItem->numGlyphs);
 
-    // XXX Are we generating a lot of cache misses here?
     for (int i = 0; i < staticTextItem->numGlyphs; i++) {
         glyphIndices[i] = UINT16(staticTextItem->glyphs[i]); // Imperfect conversion here
 
@@ -1390,24 +1426,22 @@ void QWindowsDirect2DPaintEngine::drawTextItem(const QPointF &p, const QTextItem
     ensurePen();
 
     // If we can't support the current configuration with Direct2D, fall back to slow path
-    // Most common cases are perspective transform and gradient brush as pen
-    if ((state()->transform().isAffine() == false) || d->pen.emulate) {
+    if (emulationRequired(PenEmulation)) {
         QPaintEngine::drawTextItem(p, textItem);
         return;
     }
 
-    ComPtr<IDWriteFontFace> fontFace = fontFaceFromFontEngine(ti.fontEngine);
+    ComPtr<IDWriteFontFace> fontFace = fontFaceFromFontEngine(*ti.f, ti.fontEngine);
     if (!fontFace) {
         qWarning("%s: Could not find font - falling back to slow text rendering path.", __FUNCTION__);
         QPaintEngine::drawTextItem(p, textItem);
         return;
     }
 
-    QVector<UINT16> glyphIndices(ti.glyphs.numGlyphs);
-    QVector<FLOAT> glyphAdvances(ti.glyphs.numGlyphs);
-    QVector<DWRITE_GLYPH_OFFSET> glyphOffsets(ti.glyphs.numGlyphs);
+    QVarLengthArray<UINT16> glyphIndices(ti.glyphs.numGlyphs);
+    QVarLengthArray<FLOAT> glyphAdvances(ti.glyphs.numGlyphs);
+    QVarLengthArray<DWRITE_GLYPH_OFFSET> glyphOffsets(ti.glyphs.numGlyphs);
 
-    // XXX Are we generating a lot of cache misses here?
     for (int i = 0; i < ti.glyphs.numGlyphs; i++) {
         glyphIndices[i] = UINT16(ti.glyphs.glyphs[i]); // Imperfect conversion here
         glyphAdvances[i] = ti.glyphs.effectiveAdvance(i).toReal();
@@ -1616,6 +1650,51 @@ void QWindowsDirect2DPaintEngine::adjustForAliasing(QPointF *point)
 
     if (!antiAliasingEnabled())
         (*point) += adjustment;
+}
+
+Microsoft::WRL::ComPtr<IDWriteFontFace> QWindowsDirect2DPaintEngine::fontFaceFromFontEngine(const QFont &font, QFontEngine *fe)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+
+    ComPtr<IDWriteFontFace> fontFace = d->fontCache.value(font);
+    if (fontFace)
+        return fontFace;
+
+    switch (fe->type()) {
+    case QFontEngine::Win:
+    {
+        QWindowsFontEngine *wfe = static_cast<QWindowsFontEngine *>(fe);
+        QSharedPointer<QWindowsFontEngineData> wfed = wfe->fontEngineData();
+
+        HGDIOBJ oldfont = wfe->selectDesignFont();
+        HRESULT hr = QWindowsDirect2DContext::instance()->dwriteGdiInterop()->CreateFontFaceFromHdc(wfed->hdc, &fontFace);
+        DeleteObject(SelectObject(wfed->hdc, oldfont));
+        if (FAILED(hr))
+            qWarning("%s: Could not create DirectWrite fontface from HDC: %#x", __FUNCTION__, hr);
+
+    }
+        break;
+
+#ifndef QT_NO_DIRECTWRITE
+
+    case QFontEngine::DirectWrite:
+    {
+        QWindowsFontEngineDirectWrite *wfedw = static_cast<QWindowsFontEngineDirectWrite *>(fe);
+        fontFace = wfedw->directWriteFontFace();
+    }
+        break;
+
+#endif // QT_NO_DIRECTWRITE
+
+    default:
+        qWarning("%s: Unknown font engine!", __FUNCTION__);
+        break;
+    }
+
+    if (fontFace)
+        d->fontCache.insert(font, fontFace);
+
+    return fontFace;
 }
 
 QT_END_NAMESPACE

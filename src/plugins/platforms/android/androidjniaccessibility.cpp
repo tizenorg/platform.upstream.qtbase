@@ -50,7 +50,7 @@
 
 #include "qdebug.h"
 
-static const char m_qtTag[] = "QtA11y";
+static const char m_qtTag[] = "Qt A11Y";
 static const char m_classErrorMsg[] = "Can't find class \"%s\"";
 static const char m_methodErrorMsg[] = "Can't find method \"%s%s\"";
 
@@ -170,7 +170,7 @@ if (!clazz) { \
     jmethodID method = env->GetMethodID(clazz, METHOD_NAME, METHOD_SIGNATURE); \
     if (!method) { \
         __android_log_print(ANDROID_LOG_WARN, m_qtTag, m_methodErrorMsg, METHOD_NAME, METHOD_SIGNATURE); \
-        return; \
+        return false; \
     } \
     env->CallVoidMethod(OBJECT, method, __VA_ARGS__); \
 }
@@ -184,20 +184,18 @@ if (!clazz) { \
             desc = iface->text(QAccessible::Name);
             if (desc.isEmpty())
                 desc = iface->text(QAccessible::Description);
-
-            desc += QChar(' ') + QString::fromUtf8(qAccessibleRoleString(iface->role()));
         }
 
         jstring jdesc = env->NewString((jchar*) desc.constData(), (jsize) desc.size());
         return jdesc;
     }
 
-    static void populateNode(JNIEnv *env, jobject /*thiz*/, jint objectId, jobject node)
+    static bool populateNode(JNIEnv *env, jobject /*thiz*/, jint objectId, jobject node)
     {
         QAccessibleInterface *iface = interfaceFromId(objectId);
         if (!iface || !iface->isValid()) {
             __android_log_print(ANDROID_LOG_WARN, m_qtTag, "Accessibility: populateNode for Invalid ID");
-            return;
+            return false;
         }
         QAccessible::State state = iface->state();
 
@@ -216,18 +214,11 @@ if (!clazz) { \
             }
         }
 
-        if ((iface->role() != QAccessible::NoRole) &&
-            (iface->role() != QAccessible::Client) &&
-            (iface->role() != QAccessible::Pane)) {
-            desc += QChar(' ') + QString::fromUtf8(qAccessibleRoleString(iface->role()));
-        }
-
         CALL_METHOD(node, "setEnabled", "(Z)V", !state.disabled)
-        //CALL_METHOD(node, "setFocusable", "(Z)V", state.focusable)
-        CALL_METHOD(node, "setFocusable", "(Z)V", true)
-        //CALL_METHOD(node, "setFocused", "(Z)V", state.focused)
-        CALL_METHOD(node, "setCheckable", "(Z)V", state.checkable)
-        CALL_METHOD(node, "setChecked", "(Z)V", state.checked)
+        CALL_METHOD(node, "setFocusable", "(Z)V", (bool)state.focusable)
+        CALL_METHOD(node, "setFocused", "(Z)V", (bool)state.focused)
+        CALL_METHOD(node, "setCheckable", "(Z)V", (bool)state.checkable)
+        CALL_METHOD(node, "setChecked", "(Z)V", (bool)state.checked)
         CALL_METHOD(node, "setVisibleToUser", "(Z)V", !state.invisible)
 
         if (iface->actionInterface()) {
@@ -235,7 +226,7 @@ if (!clazz) { \
             bool clickable = actions.contains(QAccessibleActionInterface::pressAction());
             bool toggle = actions.contains(QAccessibleActionInterface::toggleAction());
             if (clickable || toggle) {
-                CALL_METHOD(node, "setClickable", "(Z)V", clickable)
+                CALL_METHOD(node, "setClickable", "(Z)V", (bool)clickable)
                 CALL_METHOD(node, "addAction", "(I)V", 16) // ACTION_CLICK defined in AccessibilityNodeInfo
             }
         }
@@ -243,6 +234,8 @@ if (!clazz) { \
         jstring jdesc = env->NewString((jchar*) desc.constData(), (jsize) desc.size());
         //CALL_METHOD(node, "setText", "(Ljava/lang/CharSequence;)V", jdesc)
         CALL_METHOD(node, "setContentDescription", "(Ljava/lang/CharSequence;)V", jdesc)
+
+        return true;
     }
 
     static JNINativeMethod methods[] = {
@@ -252,7 +245,7 @@ if (!clazz) { \
         {"descriptionForAccessibleObject", "(I)Ljava/lang/String;", (jstring)descriptionForAccessibleObject},
         {"screenRect", "(I)Landroid/graphics/Rect;", (jobject)screenRect},
         {"hitTest", "(FF)I", (void*)hitTest},
-        {"populateNode", "(ILandroid/view/accessibility/AccessibilityNodeInfo;)V", (void*)populateNode},
+        {"populateNode", "(ILandroid/view/accessibility/AccessibilityNodeInfo;)Z", (void*)populateNode},
         {"clickAction", "(I)Z", (void*)clickAction},
     };
 

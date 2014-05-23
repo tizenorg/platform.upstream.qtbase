@@ -47,6 +47,7 @@
 
 #include <d2d1_1.h>
 #include <dwrite_1.h>
+#include <wrl.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -67,7 +68,14 @@ public:
 
     void setState(QPainterState *s) Q_DECL_OVERRIDE;
 
+    void draw(const QVectorPath &path) Q_DECL_OVERRIDE;
+
     void fill(const QVectorPath &path, const QBrush &brush) Q_DECL_OVERRIDE;
+    void fill(ID2D1Geometry *geometry, const QBrush &brush);
+
+    void stroke(const QVectorPath &path, const QPen &pen) Q_DECL_OVERRIDE;
+    void stroke(ID2D1Geometry *geometry, const QPen &pen);
+
     void clip(const QVectorPath &path, Qt::ClipOperation op) Q_DECL_OVERRIDE;
 
     void clipEnabledChanged() Q_DECL_OVERRIDE;
@@ -114,6 +122,8 @@ private:
     bool antiAliasingEnabled() const;
     void adjustForAliasing(QRectF *rect);
     void adjustForAliasing(QPointF *point);
+
+    Microsoft::WRL::ComPtr<IDWriteFontFace> fontFaceFromFontEngine(const QFont &font, QFontEngine *fe);
 };
 
 QT_END_NAMESPACE
