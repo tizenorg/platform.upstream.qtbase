@@ -811,6 +811,8 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %{_datadir}/qt5/mkspecs/qdevice.pri
 %{_datadir}/qt5/mkspecs/winphone-arm-msvc2012
 %{_datadir}/qt5/mkspecs/winphone-x86-msvc2012
+%{_datadir}/qt5/mkspecs/winphone-arm-msvc2013
+%{_datadir}/qt5/mkspecs/winphone-x86-msvc2013
 %{_datadir}/qt5/mkspecs/winrt-arm-msvc2012
 %{_datadir}/qt5/mkspecs/winrt-x64-msvc2012
 %{_datadir}/qt5/mkspecs/winrt-x86-msvc2012
