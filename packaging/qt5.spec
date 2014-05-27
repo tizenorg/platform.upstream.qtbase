@@ -41,6 +41,11 @@
 %define xkb_config_root %{nil}
 %endif
 
+#%ifarch %arm armv7l %{aarch64}
+#%define extracflags -flax-vector-conversions -D__ARM_NEON__
+#%define extracxxflags -flax-vector-conversions -D__ARM_NEON__
+#%endif
+
 %if "%{profile}" == "mobile"
 %define _with_tizenscim 1
 %else
@@ -574,6 +579,11 @@ cp %{SOURCE1001} .
 
 %build
 touch .git
+
+%ifarch %arm armv7l %{aarch64}
+export CFLAGS="$(echo $CFLAGS| sed 's/-mfpu=neon//gi')"
+export CXXFLAGS="$(echo $CXXFLAGS| sed 's/-mfpu=neon//gi')"
+%endif
 
 MAKEFLAGS=%{?_smp_mflags} \
 ./configure --disable-static \
