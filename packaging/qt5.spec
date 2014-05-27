@@ -41,6 +41,10 @@
 %define xkb_config_root %{nil}
 %endif
 
+%ifarch %arm armv7l %{aarch64}
+%define extracflags -flax-vector-conversions
+%endif
+
 %if "%{profile}" == "mobile"
 %define _with_tizenscim 1
 %else
@@ -576,6 +580,7 @@ cp %{SOURCE1001} .
 touch .git
 
 MAKEFLAGS=%{?_smp_mflags} \
+CFLAGS="$CFLAGS %{extracflags}" \
 ./configure --disable-static \
     -confirm-license \
 %if ! 0%{?qt5_release_build}
