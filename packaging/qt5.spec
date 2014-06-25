@@ -35,9 +35,12 @@
 %define xkb_config_root -xkb-config-root /etc/X11/xkb
 %define _force_eglx 1
 %ifnarch armv7l armv7el
-%define _repository emulator
+%define _tizen_emulator 1
 %endif
 %else
+%if "%{_repository}" == "emulator"
+%define _tizen_emulator 1
+%endif
 %define _with_xkbcommon 1
 %define xkb_config_root %{nil}
 %endif
@@ -593,7 +596,7 @@ MAKEFLAGS=%{?_smp_mflags} \
     -platform devices/linux-g++-tizen \
 %if "%{profile}" != ""
     -device-option TIZEN_PROFILE=%{profile} \
-%if "%_repository" == "emulator"
+%if 0%{?_tizen_emulator:1}
     -device-option TIZEN_EMULATOR=1 \
 %endif
 %endif
