@@ -617,10 +617,10 @@ MAKEFLAGS=%{?_smp_mflags} \
 %endif
 %endif
 %if %{with wayland}
-    -device-option QT_QPA_DEFAULT_PLATFORM=wayland \
+    -qpa wayland \
 %else
 %if %{with x}
-    -device-option QT_QPA_DEFAULT_PLATFORM=xcb \
+    -qpa xcb \
 %endif
 %endif
     -opengl es2 \
