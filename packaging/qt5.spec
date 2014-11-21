@@ -54,7 +54,7 @@
 %endif
 
 
-%if "%{profile}" == "mobile"
+%if "%{profile}" == "mobile" && 0%{tizen_version_major} < 3
 %define _with_tizenscim 1
 %endif
 
@@ -63,7 +63,7 @@
 %define _with_xscrnsaver 1
 %endif
 
-%if "%{profile}" != "wearable" && "%{profile}" != "mobile"
+%if "%{profile}" != "wearable" && "%{profile}" != "mobile" && 0%{tizen_version_major} < 3
 %define _with_egl 1
 %endif
 
@@ -602,6 +602,12 @@ export CXXFLAGS="$(echo $CXXFLAGS| sed 's/-mfpu=neon//gi')"
 %endif
 %endif
 
+%if "%{profile}" == "mobile"
+%ifarch %arm armv7l %{aarch64}
+unset CFLAGS CXXFLAGS LFLAGS
+%endif
+%endif
+
 MAKEFLAGS=%{?_smp_mflags} \
 ./configure --disable-static \
     -confirm-license \
@@ -614,6 +620,9 @@ MAKEFLAGS=%{?_smp_mflags} \
     -device-option TIZEN_PROFILE=%{profile} \
 %if 0%{?_tizen_emulator:1}
     -device-option TIZEN_EMULATOR=1 \
+%endif
+%if %{with tizenscim}
+    -device-option DEFINES+=TIZEN_SCIM=1
 %endif
 %endif
 %if %{with wayland}
