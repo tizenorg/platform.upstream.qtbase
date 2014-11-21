@@ -54,7 +54,7 @@
 %endif
 
 
-%if "%{profile}" == "mobile"
+%if "%{profile}" == "mobile" && 0%{tizen_version_major} < 3
 %define _with_tizenscim 1
 %endif
 
