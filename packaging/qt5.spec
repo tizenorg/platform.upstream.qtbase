@@ -595,16 +595,14 @@ This package contains the Qt5 development defaults package
 cp %{SOURCE1001} .
 touch .git
 
-%if "%{profile}" == "common"
-%ifarch %arm armv7l %{aarch64}
-export CFLAGS="$(echo $CFLAGS| sed 's/-mfpu=neon//gi')"
-export CXXFLAGS="$(echo $CXXFLAGS| sed 's/-mfpu=neon//gi')"
-%endif
-%endif
-
 %if "%{profile}" == "mobile"
 %ifarch %arm armv7l %{aarch64}
 unset CFLAGS CXXFLAGS LFLAGS
+%endif
+%else
+%ifarch %arm armv7l %{aarch64}
+export CFLAGS="$(echo $CFLAGS| sed 's/-mfpu=neon//gi')"
+export CXXFLAGS="$(echo $CXXFLAGS| sed 's/-mfpu=neon//gi')"
 %endif
 %endif
 
