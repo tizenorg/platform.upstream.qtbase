@@ -63,7 +63,7 @@
 # evolve.
 Name:       qt5
 Summary:    Cross-platform application and UI framework
-Version:    5.4.0
+Version:    5.4.1
 Release:    0
 Group:      Base/Libraries
 License:    LGPL-2.1+ or GPL-3.0
@@ -590,7 +590,7 @@ MAKEFLAGS=%{?_smp_mflags} \
     -developer-build \
     -no-warnings-are-errors \
 %endif
-    -platform devices/linux-g++-tizen \
+    -platform linux-g++-tizen \
 %if "%{profile}" != ""
     -device-option TIZEN_PROFILE=%{profile} \
 %if 0%{?_tizen_emulator:1}
