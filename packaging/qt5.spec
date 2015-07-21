@@ -263,6 +263,7 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 %description plugin-platform-offscreen
 This package contains the offscreen platform plugin
 
+%ifnarch aarch64
 %package plugin-platform-eglfs
 Summary:    Eglfs platform plugin
 Group:      Base/Libraries
@@ -278,6 +279,7 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-platform-minimalegl
 This package contains the minimalegl platform plugin
+%endif
 
 %package plugin-platform-linuxfb
 Summary:    Linux framebuffer platform plugin
@@ -391,7 +393,9 @@ This package contains the QtGui library
 Summary:    Development files for QtGui
 Group:      Base/Libraries
 Requires:   %{name}-qtgui = %{version}-%{release}
+%ifnarch aarch64
 Requires:   %{name}-qtopengl-devel
+%endif
 
 %description qtgui-devel
 This package contains the files necessary to develop
@@ -417,6 +421,7 @@ Requires:   %{name}-qtnetwork = %{version}-%{release}
 This package contains the files necessary to develop
 applications that use QtNetwork
 
+%ifnarch aarch64
 %package qtopengl
 Summary:    The QtOpenGL library
 Group:      Base/Libraries
@@ -440,6 +445,7 @@ Requires:   pkgconfig(egl)
 %description qtopengl-devel
 This package contains the files necessary to develop
 applications that use QtOpenGL
+%endif
 
 
 %package qtsql
@@ -719,6 +725,10 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %fdupes %{buildroot}%{_includedir}
 %fdupes %{buildroot}%{_datadir}
 
+%ifarch aarch64
+rm -rf %{buildroot}%{_datadir}/qt5/mkspecs/android-g++
+%endif
+
 
 #### Pre/Post section
 
@@ -752,10 +762,12 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %postun qttest
 /sbin/ldconfig
 
+%ifnarch aarch64
 %post qtopengl
 /sbin/ldconfig
 %postun qtopengl
 /sbin/ldconfig
+%endif
 
 %post qtxml
 /sbin/ldconfig
@@ -918,6 +930,7 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %{_datadir}/qt5/mkspecs/modules/qt_lib_network_private.pri
 
 
+%ifnarch aarch64
 %files qtopengl
 %defattr(-,root,root,-)
 %manifest %{name}.manifest
@@ -943,6 +956,7 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %{_datadir}/qt5/mkspecs/android-g++/qplatformdefs.h
 %{_datadir}/qt5/mkspecs/modules/qt_lib_openglextensions.pri
 %{_datadir}/qt5/mkspecs/modules/qt_lib_openglextensions_private.pri
+%endif
 
 
 %files qtsql
@@ -1105,6 +1119,7 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %manifest %{name}.manifest
 %{_libdir}/qt5/plugins/platforms/libqoffscreen.so
 
+%ifnarch aarch64
 %files plugin-platform-eglfs
 %defattr(-,root,root,-)
 %manifest %{name}.manifest
@@ -1114,6 +1129,7 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %defattr(-,root,root,-)
 %manifest %{name}.manifest
 %{_libdir}/qt5/plugins/platforms/libqminimalegl.so
+%endif
 
 %files plugin-platform-linuxfb
 %defattr(-,root,root,-)
