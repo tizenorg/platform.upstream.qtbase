@@ -630,7 +630,11 @@ MAKEFLAGS=%{?_smp_mflags} \
     -qpa xcb \
 %endif
 %endif
+%ifarch aarch64
+    -no-opengl \
+%else
     -opengl es2 \
+%endif
     -prefix "%{_prefix}" \
     -bindir "%{_libdir}/qt5/bin" \
     -libdir "%{_libdir}" \
