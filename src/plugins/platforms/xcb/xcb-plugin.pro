@@ -11,3 +11,5 @@ SOURCES = \
     qxcbmain.cpp
 OTHER_FILES += xcb.json README
 
+
+tizen:LIBS += -laul
