@@ -63,7 +63,7 @@
 # evolve.
 Name:       qt5
 Summary:    Cross-platform application and UI framework
-Version:    5.4.1
+Version:    5.5.90+alpha1
 Release:    0
 Group:      Base/Libraries
 License:    LGPL-2.1+ or GPL-3.0
@@ -324,6 +324,14 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 This package contains tizenscim platform inputcontext plugin
 %endif
 
+%package plugin-generic-tuiotouch
+Summary:    The TuioTouch generic plugin
+Group:      Base/Libraries
+Requires:   %{name}-qtcore = %{version}-%{release}
+
+%description plugin-generic-tuiotouch
+This package contains evdev plugins
+
 %package plugin-generic-evdev
 Summary:    The evdev generic plugin
 Group:      Base/Libraries
@@ -352,6 +360,25 @@ Requires:   pkgconfig(dbus-1)
 This package contains the files necessary to develop
 applications that use QtDBus
 
+%package qtegldeviceintegration
+Summary:    The Qt5EglDeviceIntegration library
+Group:      Base/Libraries
+Requires(post):     /sbin/ldconfig
+Requires(postun):   /sbin/ldconfig
+
+%description qtegldeviceintegration
+This package contains the Qt5EglDeviceIntegration library
+
+
+%package qtegldeviceintegration-devel
+Summary:    Development files for Qt5EglDeviceIntegration
+Group:      Base/Libraries
+Requires:   %{name}-qtdbus = %{version}-%{release}
+Requires:   pkgconfig(dbus-1)
+
+%description qtegldeviceintegration-devel
+This package contains the files necessary to develop
+applications that use Qt5EglDeviceIntegration
 
 %package qtgui
 Summary:    The QtGui Library
@@ -799,6 +826,7 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %{_datadir}/qt5/mkspecs/darwin-*
 %{_datadir}/qt5/mkspecs/features
 %{_datadir}/qt5/mkspecs/freebsd-*
+%{_datadir}/qt5/mkspecs/haiku-g++
 %{_datadir}/qt5/mkspecs/hpux-*
 %{_datadir}/qt5/mkspecs/hpuxi-*
 %{_datadir}/qt5/mkspecs/hurd-g++
@@ -823,16 +851,14 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %{_datadir}/qt5/mkspecs/wince*
 %{_datadir}/qt5/mkspecs/devices
 %{_datadir}/qt5/mkspecs/qdevice.pri
-%{_datadir}/qt5/mkspecs/winphone-arm-msvc2012
-%{_datadir}/qt5/mkspecs/winphone-x86-msvc2012
 %{_datadir}/qt5/mkspecs/winphone-arm-msvc2013
 %{_datadir}/qt5/mkspecs/winphone-x86-msvc2013
-%{_datadir}/qt5/mkspecs/winrt-arm-msvc2012
-%{_datadir}/qt5/mkspecs/winrt-x64-msvc2012
-%{_datadir}/qt5/mkspecs/winrt-x86-msvc2012
 %{_datadir}/qt5/mkspecs/winrt-arm-msvc2013
 %{_datadir}/qt5/mkspecs/winrt-x64-msvc2013
 %{_datadir}/qt5/mkspecs/winrt-x86-msvc2013
+%{_datadir}/qt5/mkspecs/winrt-arm-msvc2015
+%{_datadir}/qt5/mkspecs/winrt-x64-msvc2015
+%{_datadir}/qt5/mkspecs/winrt-x86-msvc2015
 %config(noreplace) %{_sysconfdir}/rpm/macros.qt5-default
 
 %files qtdbus
@@ -854,6 +880,20 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %{_datadir}/qt5/mkspecs/modules/qt_lib_dbus.pri
 %{_datadir}/qt5/mkspecs/modules/qt_lib_dbus_private.pri
 
+%files qtegldeviceintegration
+%defattr(-,root,root,-)
+%manifest %{name}.manifest
+%{_libdir}/libQt5EglDeviceIntegration.so.*
+
+
+%files qtegldeviceintegration-devel
+%defattr(-,root,root,-)
+%manifest %{name}.manifest
+%{_libdir}/libQt5EglDeviceIntegration.so
+%{_libdir}/libQt5EglDeviceIntegration.prl
+%{_libdir}/libQt5EglDeviceIntegration.la
+%{_libdir}/pkgconfig/Qt5EglDeviceIntegration.pc
+%{_datadir}/qt5/mkspecs/modules/qt_lib_eglfs_device_lib_private.pri
 
 %files qtgui
 %defattr(-,root,root,-)
@@ -1137,6 +1177,11 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %defattr(-,root,root,-)
 %manifest %{name}.manifest
 %{_libdir}/qt5/plugins/generic/libqevdev*plugin.so
+
+%files plugin-generic-tuiotouch
+%defattr(-,root,root,-)
+%manifest %{name}.manifest
+%{_libdir}/qt5/plugins/generic/libqtuiotouchplugin.so
 
 %files -n qt5-default
 %defattr(-,root,root,-)
