@@ -57,7 +57,7 @@
 # evolve.
 Name:       qt5
 Summary:    Cross-platform application and UI framework
-Version:    5.2.90+alpha
+Version:    5.2.95+rc1
 Release:    0
 Group:      Base/Libraries
 License:    LGPL-2.1+ or GPL-3.0
