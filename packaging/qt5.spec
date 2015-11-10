@@ -357,7 +357,7 @@ Group:      Base/Libraries
 Requires(post):     /sbin/ldconfig
 Requires(postun):   /sbin/ldconfig
 %if %{with wayland}
-Requires: qt5-qtwayland
+Recommends: qt5-qtwayland
 %endif
 
 %description qtgui
