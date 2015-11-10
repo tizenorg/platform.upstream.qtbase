@@ -11,3 +11,4 @@ SOURCES = \
     qxcbmain.cpp
 OTHER_FILES += xcb.json README
 
+    !isEmpty(XCB_STATIC_LINK): LIBS += -lXau
