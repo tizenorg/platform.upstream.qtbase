@@ -90,6 +90,8 @@ BuildRequires:  python
 BuildRequires:  pkgconfig(fontconfig)
 %if %{with xkbcommon}
 BuildRequires:  pkgconfig(xkbcommon)
+%endif
+%if "%{profile}" != "ivi"
 BuildRequires:  pkgconfig(xkeyboard-config)
 %endif
 %if %{with egl}
