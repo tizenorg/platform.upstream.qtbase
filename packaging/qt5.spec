@@ -575,6 +575,13 @@ cp %{SOURCE1001} .
 %build
 touch .git
 
+%if "%{profile}" == "common"
+%ifarch %arm armv7l %{aarch64}
+export CFLAGS="$(echo $CFLAGS| sed 's/-mfpu=neon//gi')"
+export CXXFLAGS="$(echo $CXXFLAGS| sed 's/-mfpu=neon//gi')"
+%endif
+%endif
+
 MAKEFLAGS=%{?_smp_mflags} \
 ./configure --disable-static \
     -confirm-license \
