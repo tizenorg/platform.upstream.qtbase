@@ -29,16 +29,8 @@
 # installed-but-unpackaged static libs.
 # This flag tells rpmbuild to behave.
 
-%if "%{tizen}" == "2.1"
+%if "%{tizen_version_major}" < "3"
 %define profile mobile
-%endif
-
-#no better way currently
-%if "%{tizen}" == "2.3"
-%define profile wearable
-%endif
-
-%if "%{tizen}" == "2.1" || "%{tizen}" == "2.3"
 %define _with_x 1
 %define xkb_config_root -xkb-config-root /etc/X11/xkb
 %define _force_eglx 1
@@ -53,21 +45,10 @@
 %define xkb_config_root %{nil}
 %endif
 
-
-%if "%{profile}" == "mobile" && "%{tizen_version_major}" < "3"
-%define _with_tizenscim 1
-%endif
-
-%if "%{profile}" != "wearable"
+%if "%{profile}" != "wearable" && "%{tizen_version_major}" < "3"
 %define _with_cups 1
-%define _with_xscrnsaver 1
 %endif
 
-%if "%{profile}" != "wearable" && "%{profile}" != "mobile" && "%{tizen_version_major}" > "2"
-%define _with_egl 1
-%endif
-
-%bcond_with egl
 %bcond_with tizenscim
 %bcond_with xkbcommon
 %bcond_with wayland
@@ -119,9 +100,7 @@ BuildRequires:  pkgconfig(fontconfig)
 BuildRequires:  pkgconfig(xkbcommon)
 BuildRequires:  pkgconfig(xkeyboard-config)
 %endif
-%if %{with egl}
 BuildRequires:  pkgconfig(egl)
-%endif
 %if %{with tizenscim}
 BuildRequires:  pkgconfig(scim)
 %endif
@@ -432,9 +411,7 @@ Summary:    Development files for QtOpenGL
 Group:      Base/Libraries
 Requires:   %{name}-qtopengl = %{version}-%{release}
 Requires:   pkgconfig(gles20)
-%if %{with egl}
 Requires:   pkgconfig(egl)
-%endif
 
 
 %description qtopengl-devel
@@ -620,7 +597,7 @@ MAKEFLAGS=%{?_smp_mflags} \
     -device-option TIZEN_EMULATOR=1 \
 %endif
 %if %{with tizenscim}
-    -device-option DEFINES+=TIZEN_SCIM=1
+    -device-option DEFINES+=TIZEN_SCIM=1 \
 %endif
 %endif
 %if %{with wayland}
