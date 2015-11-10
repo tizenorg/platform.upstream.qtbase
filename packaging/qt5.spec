@@ -82,7 +82,7 @@
 # evolve.
 Name:       qt5
 Summary:    Cross-platform application and UI framework
-Version:    5.3.1
+Version:    5.3.99+beta1
 Release:    0
 Group:      Base/Libraries
 License:    LGPL-2.1+ or GPL-3.0
@@ -308,14 +308,6 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 %description plugin-printsupport-cups
 This package contains the CUPS print support plugin
 %endif
-
-%package plugin-accessible-widgets
-Summary:     Accessible widgets plugin
-Group:       Base/Libraries
-Requires:    %{name}-qtcore = %{version}-%{release}
-
-%description plugin-accessible-widgets
-This package contains the access widgets plugin
 
 %package plugin-sqldriver-sqlite
 Summary:    Sqlite sql driver plugin
@@ -1012,6 +1004,7 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %defattr(-,root,root,-)
 %manifest %{name}.manifest
 %{_includedir}/qt5/QtPlatformSupport
+%{_includedir}/qt5/QtPlatformHeaders
 %{_libdir}/libQt5PlatformSupport.prl
 %{_libdir}/libQt5PlatformSupport.la
 %{_libdir}/libQt5PlatformSupport.a
@@ -1131,11 +1124,6 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %manifest %{name}.manifest
 %{_libdir}/qt5/plugins/printsupport/libcupsprintersupport.so
 %endif
-
-%files plugin-accessible-widgets
-%defattr(-,root,root,-)
-%manifest %{name}.manifest
-%{_libdir}/qt5/plugins/accessible/libqtaccessiblewidgets.so
 
 %files plugin-sqldriver-sqlite
 %defattr(-,root,root,-)
