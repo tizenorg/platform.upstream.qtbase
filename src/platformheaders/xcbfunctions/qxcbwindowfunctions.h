@@ -107,6 +107,16 @@ public:
             return func(window);
         return UINT_MAX;
     }
+
+    typedef void (*SetDeviceOrientationType)(Qt::ScreenOrientation orientation);
+    static const QByteArray setDeviceOrientationTypeIdentifier() { return QByteArrayLiteral("XcbSetDeviceOrientationType"); }
+
+    static void setDeviceOrientation(Qt::ScreenOrientation orientation)
+    {
+        SetDeviceOrientationType func = reinterpret_cast<SetDeviceOrientationType>(QGuiApplication::platformFunction(setDeviceOrientationTypeIdentifier()));
+        if (func)
+            func(orientation);
+    }
 };
 
 
