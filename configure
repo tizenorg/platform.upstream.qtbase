@@ -644,6 +644,7 @@ CFG_OPENVG_SHIVA=auto
 CFG_OPENVG_ON_OPENGL=auto
 CFG_EGL=auto
 CFG_EGL_X=auto
+CFG_FORCE_EGL_X=no
 CFG_FONTCONFIG=auto
 CFG_FREETYPE=auto
 CFG_HARFBUZZ=qt
@@ -1585,6 +1586,13 @@ while [ "$#" -gt 0 ]; do
         else
             UNKNOWN_OPT=yes
         fi
+        ;;
+    force-eglx)
+	if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_FORCE_EGL_X=yes
+        else
+            UNKNOWN_OPT=yes
+	fi
         ;;
     pch)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -5676,7 +5684,7 @@ if [ "$CFG_EGL" != "no" ]; then
     fi       # detect EGL support
     if compileTest qpa/egl "EGL" $QMAKE_CFLAGS_EGL $QMAKE_LIBS_EGL; then
         CFG_EGL=yes
-        if compileTest qpa/egl-x11 "EGL-X11" $QMAKE_CFLAGS_EGL $QMAKE_LIBS_EGL; then
+        if compileTest qpa/egl-x11 "EGL-X11" $QMAKE_CFLAGS_EGL $QMAKE_LIBS_EGL || [ "$CFG_FORCE_EGL_X" == "yes" ]; then
             CFG_EGL_X=yes
         else
             CFG_EGL_X=no

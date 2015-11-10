@@ -33,6 +33,7 @@
 %define profile mobile
 %define _with_x 1
 %define xkb_config_root -xkb-config-root /etc/X11/xkb
+%define _force_eglx 1
 %ifnarch armv7l armv7el
 %define _repository emulator
 %endif
@@ -649,6 +650,9 @@ MAKEFLAGS=%{?_smp_mflags} \
     %{xkb_config_root} \
 %if %{with x}
     -xcb \
+%if 0%{?_force_eglx:1}
+    -force-eglx \
+%endif
     -qt-xcb
 %else 
     -no-xcb
