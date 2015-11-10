@@ -1894,6 +1894,13 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
         window = QGuiApplication::focusWindow();
     }
 
+#ifdef Q_OS_LINUX_TIZEN
+    if (e->key == Qt::Key_Back && QGuiApplication::inputMethod() && QGuiApplication::inputMethod()->isVisible()) {
+        QGuiApplication::inputMethod()->hide();
+        return;
+    }
+#endif
+
 #if !defined(Q_OS_OSX)
     // On OS X the shortcut override is checked earlier, see: QWindowSystemInterface::handleKeyEvent()
     const bool checkShortcut = e->keyType == QEvent::KeyPress && window != 0;
