@@ -100,44 +100,6 @@ Qt is a cross-platform application and UI framework. Using Qt, you can
 write web-enabled applications once and deploy them across desktop,
 mobile and embedded systems without rewriting the source code.
 
-%package -n qt5-qtbase
-Summary: Meta package for installing all qtbase libraries
-Group: Base/Libraries
-Requires: qt5-default
-Requires: qt5-plugin-accessible-widgets
-Requires: qt5-plugin-bearer-connman
-Requires: qt5-plugin-bearer-generic
-Requires: qt5-plugin-bearer-nm
-Requires: qt5-plugin-generic-evdev
-Requires: qt5-plugin-imageformat-gif
-Requires: qt5-plugin-imageformat-ico
-Requires: qt5-plugin-imageformat-jpeg
-%ifnarch %arm armv7l
-Requires: qt5-plugin-platform-eglfs
-Requires: qt5-plugin-platform-minimalegl
-%endif
-Requires: qt5-plugin-platforminputcontext-ibus
-Requires: qt5-plugin-platform-linuxfb
-Requires: qt5-plugin-platform-minimal
-
-Requires: qt5-plugin-platform-offscreen
-Requires: qt5-plugin-printsupport-cups
-Requires: qt5-plugin-sqldriver-sqlite
-Requires: qt5-qtconcurrent
-Requires: qt5-qtcore
-Requires: qt5-qtdbus
-Requires: qt5-qtgui
-Requires: qt5-qtnetwork
-Requires: qt5-qtopengl
-Requires: qt5-qtprintsupport
-Requires: qt5-qtsql
-Requires: qt5-qttest
-Requires: qt5-qtwidgets
-Requires: qt5-qtxml
-
-%description -n qt5-qtbase
-This package is meta package which groups qtbase libraries and plugins
-
 %package tools
 Summary:    Development tools for qtbase
 Group:      Base/Libraries
@@ -318,12 +280,12 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 %description plugin-platforminputcontext-ibus
 This package contains the ibus platform input context plugin
 
-%package plugin-platform-inputcontext-compose
+%package plugin-platforminputcontext-compose
 Summary:    Compose input context platform plugin
 Group:      Base/Libraries
 Requires:   %{name}-qtcore = %{version}-%{release}
 
-%description plugin-platform-inputcontext-compose
+%description plugin-platforminputcontext-compose
 This package contains compose platform inputcontext plugin
 
 %package plugin-generic-evdev
@@ -1048,7 +1010,7 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/platforminputcontexts/libibusplatforminputcontextplugin.so
 
-%files plugin-platform-inputcontext-compose
+%files plugin-platforminputcontext-compose
 %defattr(-,root,root,-)
 %{_libdir}/qt5/plugins/platforminputcontexts/libcomposeplatforminputcontextplugin.so
 
