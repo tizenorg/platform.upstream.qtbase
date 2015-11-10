@@ -31,6 +31,14 @@
 
 %if "%{tizen}" == "2.1"
 %define profile mobile
+%endif
+
+#no better way currently
+%if "%{tizen}" == "2.3"
+%define profile wearable
+%endif
+
+%if "%{tizen}" == "2.1" || "%{tizen}" == "2.3"
 %define _with_x 1
 %define xkb_config_root -xkb-config-root /etc/X11/xkb
 %define _force_eglx 1
@@ -45,9 +53,17 @@
 %define xkb_config_root %{nil}
 %endif
 
+
 %if "%{profile}" == "mobile"
 %define _with_tizenscim 1
-%else
+%endif
+
+%if "%{profile}" != "wearable"
+%define _with_cups 1
+%define _with_xscrnsaver 1
+%endif
+
+%if "%{profile}" != "wearable" && "%{profile}" != "mobile"
 %define _with_egl 1
 %endif
 
@@ -56,6 +72,8 @@
 %bcond_with xkbcommon
 %bcond_with wayland
 %bcond_with x
+%bcond_with cups
+%bcond_with xscrnsaver
 
 # Version is the date of latest commit in qtbase, followed by 'g' + few
 # characters of the last git commit ID.
@@ -87,7 +105,9 @@ BuildRequires:  pkgconfig(sqlite3)
 BuildRequires:  pkgconfig(zlib)
 BuildRequires:  pkgconfig(udev)
 BuildRequires:  pkgconfig(mtdev)
+%if %{with cups}
 BuildRequires:  cups-devel
+%endif
 BuildRequires:  fdupes
 BuildRequires:  flex
 BuildRequires:  libjpeg-devel
@@ -123,7 +143,9 @@ BuildRequires:  pkgconfig(aul)
 BuildRequires:  pkgconfig(xdamage)
 BuildRequires:  pkgconfig(xfixes)
 BuildRequires:  pkgconfig(xrender)
+%if %{with xscrnsaver}
 BuildRequires:  pkgconfig(xscrnsaver)
+%endif
 %endif
 
 
@@ -277,6 +299,7 @@ This package contains the XCB platform plugin
 
 %endif
 
+%if %{with cups}
 %package plugin-printsupport-cups
 Summary:    CUPS print support plugin
 Group:      Base/Libraries
@@ -284,6 +307,7 @@ Requires:   %{name}-qtcore = %{version}-%{release}
 
 %description plugin-printsupport-cups
 This package contains the CUPS print support plugin
+%endif
 
 %package plugin-accessible-widgets
 Summary:     Accessible widgets plugin
@@ -1101,10 +1125,12 @@ ln -s %{_sysconfdir}/xdg/qtchooser/5.conf %{buildroot}%{_sysconfdir}/xdg/qtchoos
 
 %endif
 
+%if %{with cups}
 %files plugin-printsupport-cups
 %defattr(-,root,root,-)
 %manifest %{name}.manifest
 %{_libdir}/qt5/plugins/printsupport/libcupsprintersupport.so
+%endif
 
 %files plugin-accessible-widgets
 %defattr(-,root,root,-)
