@@ -5684,7 +5684,7 @@ if [ "$CFG_EGL" != "no" ]; then
     fi       # detect EGL support
     if compileTest qpa/egl "EGL" $QMAKE_CFLAGS_EGL $QMAKE_LIBS_EGL; then
         CFG_EGL=yes
-        if compileTest qpa/egl-x11 "EGL-X11" $QMAKE_CFLAGS_EGL $QMAKE_LIBS_EGL || [ "$CFG_FORCE_EGL_X" == "yes" ]; then
+        if compileTest qpa/egl-x11 "EGL-X11" $QMAKE_CFLAGS_EGL $QMAKE_LIBS_EGL || [ "$CFG_FORCE_EGL_X" = "yes" ]; then
             CFG_EGL_X=yes
         else
             CFG_EGL_X=no
