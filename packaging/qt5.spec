@@ -597,10 +597,10 @@ This package contains the Qt5 development defaults package
 ##### Build section
 
 %prep
-%setup -q -n qt5-%{version}/qtbase
-cp %{SOURCE1001} .
+%setup -q -n qt5-%{version}
 
 %build
+cp %{SOURCE1001} .
 touch .git
 
 %if "%{profile}" == "common"
