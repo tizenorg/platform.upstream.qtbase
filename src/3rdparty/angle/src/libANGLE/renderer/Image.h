@@ -14,6 +14,7 @@
 #include "common/debug.h"
 #include "libANGLE/Error.h"
 
+#define GL_GLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
 
 namespace gl

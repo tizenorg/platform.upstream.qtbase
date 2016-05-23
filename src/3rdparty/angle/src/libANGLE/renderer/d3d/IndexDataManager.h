@@ -10,6 +10,7 @@
 #ifndef LIBANGLE_INDEXDATAMANAGER_H_
 #define LIBANGLE_INDEXDATAMANAGER_H_
 
+#define GL_GLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
 
 #include "common/angleutils.h"

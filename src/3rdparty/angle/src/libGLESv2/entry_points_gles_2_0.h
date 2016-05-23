@@ -9,6 +9,7 @@
 #ifndef LIBGLESV2_ENTRYPOINTGLES20_H_
 #define LIBGLESV2_ENTRYPOINTGLES20_H_
 
+#define GL_GLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
 #include <export.h>
 

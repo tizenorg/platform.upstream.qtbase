@@ -9,6 +9,7 @@
 #ifndef LIBANGLE_VALIDATION_ES2_H_
 #define LIBANGLE_VALIDATION_ES2_H_
 
+#define GL_GLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
 
 namespace gl

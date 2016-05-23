@@ -33,6 +33,7 @@
 
 #include <EGL/egl.h>
 #include <EGL/eglvivante.h>
+#define GL_GLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
 
 int main(int, char **)

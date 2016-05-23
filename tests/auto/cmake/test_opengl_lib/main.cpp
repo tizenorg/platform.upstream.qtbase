@@ -35,6 +35,7 @@
 #include <qglobal.h>
 #ifndef QT_OPENGL_DYNAMIC
 #  if defined(GL_IMPLEMENTATION_GLES2)
+#    define GL_GLEXT_PROTOTYPES
 #    include <GLES2/gl2.h>
 #  elif defined(GL_IMPLEMENTATION_GL)
 #    ifdef Q_OS_WIN

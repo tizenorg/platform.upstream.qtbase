@@ -32,6 +32,8 @@
 ****************************************************************************/
 
 #include <EGL/egl.h>
+
+#define GL_GLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
 #include <bcm_host.h>
 

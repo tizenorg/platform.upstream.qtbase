@@ -13,6 +13,7 @@
 
 #include "common/angleutils.h"
 
+#define GL_GLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
 
 namespace rx

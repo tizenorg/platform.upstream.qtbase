@@ -10,6 +10,7 @@
 #ifndef ANGLEGL_H_
 #define ANGLEGL_H_
 
+#define GL_GLEXT_PROTOTYPES
 #include "GLES2/gl2.h"
 #include "GLES2/gl2ext.h"
 #include "GLES3/gl3.h"

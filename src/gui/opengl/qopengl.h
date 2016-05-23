@@ -89,6 +89,7 @@ typedef void* GLeglImageOES;
 // applications cannot target ES 3. Therefore QOpenGLFunctions and
 // friends do everything dynamically and never rely on these macros.
 
+#define GL_GLEXT_PROTOTYPES
 #  if defined(QT_OPENGL_ES_3_1)
 #   include <GLES3/gl31.h>
 #  elif defined(QT_OPENGL_ES_3)
